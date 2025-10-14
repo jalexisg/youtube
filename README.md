@@ -38,6 +38,19 @@ cd /Users/Alexis/Desktop/githubroot/github/youtube
 
 # Instalar dependencias de Python
 pip install -r requirements.txt
+
+# Requisitos incluidos en requirements.txt:
+# - faster-whisper
+# - moviepy
+# - numpy
+# - ffmpeg-python
+# - pydub
+# - nltk
+# - yt-dlp
+# - instaloader
+# - pillow
+# - torch
+# - openai-whisper
 ```
 
 ## 🎯 Uso

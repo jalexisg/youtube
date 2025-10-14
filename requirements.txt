@@ -5,3 +5,7 @@ ffmpeg-python>=0.2.0
 pydub>=0.25.1
 nltk>=3.8
 yt-dlp>=2023.7.6
+instaloader>=4.9
+pillow>=9.0
+torch>=2.0
+openai-whisper>=20230314

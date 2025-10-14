@@ -38,6 +38,22 @@ MANIFEST
 # IDE
 .idea/
 .vscode/
+
+# Project media/output folders
+audios/
+videos/
+transcripciones/
+images/
+
+# Sensitive authentication file
+cookies.txt
+
+# Environment and system files
+.env
+.DS_Store
+*.log
+*.bak
+*.swp
 *.swp
 *.swo
 
