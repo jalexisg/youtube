@@ -1,0 +1,129 @@
+{
+  "file_info": {
+    "original_file": "/Users/Alexis/Desktop/githubroot/github/youtube/videos/02.mp4",
+    "file_type": "video",
+    "processed_date": "2025-09-08T10:35:12.682419",
+    "file_size_mb": 3.76
+  },
+  "transcription": {
+    "language": "en",
+    "duration_seconds": 28.05,
+    "full_text": "Do you think Elon Musk has work-life balance? No. Do you think Steve Jobs, when he was alive, had work-life balance? No. Do you think Bill Gates? No. Henry Ford? No. Original Heineken? No. So, none of those people that created the wealth of the world had work-life balance. Why do you think you're going to have it? Because you deserve it? I don't think so. You deserve what you get in life by working hard.",
+    "raw_text": "Do you think Elon Musk has work-life balance? No. Do you think Steve Jobs, when he was alive, had work-life balance? No. Do you think Bill Gates? No. Henry Ford? No. Original Heineken? No. So, none of those people that created the wealth of the world had work-life balance. Why do you think you're going to have it? Because you deserve it? I don't think so. You deserve what you get in life by working hard.",
+    "segments": [
+      {
+        "id": 0,
+        "start": 0.0,
+        "end": 2.44,
+        "text": "Do you think Elon Musk has work-life balance?"
+      },
+      {
+        "id": 1,
+        "start": 2.44,
+        "end": 3.44,
+        "text": "No."
+      },
+      {
+        "id": 2,
+        "start": 3.44,
+        "end": 7.12,
+        "text": "Do you think Steve Jobs, when he was alive, had work-life balance?"
+      },
+      {
+        "id": 3,
+        "start": 7.12,
+        "end": 8.12,
+        "text": "No."
+      },
+      {
+        "id": 4,
+        "start": 8.12,
+        "end": 9.12,
+        "text": "Do you think Bill Gates?"
+      },
+      {
+        "id": 5,
+        "start": 9.12,
+        "end": 10.12,
+        "text": "No."
+      },
+      {
+        "id": 6,
+        "start": 10.12,
+        "end": 11.12,
+        "text": "Henry Ford?"
+      },
+      {
+        "id": 7,
+        "start": 11.12,
+        "end": 12.12,
+        "text": "No."
+      },
+      {
+        "id": 8,
+        "start": 12.12,
+        "end": 14.5,
+        "text": "Original Heineken?"
+      },
+      {
+        "id": 9,
+        "start": 14.5,
+        "end": 15.5,
+        "text": "No."
+      },
+      {
+        "id": 10,
+        "start": 15.5,
+        "end": 19.06,
+        "text": "So, none of those people that created the wealth of the world had work-life balance."
+      },
+      {
+        "id": 11,
+        "start": 19.06,
+        "end": 21.5,
+        "text": "Why do you think you're going to have it?"
+      },
+      {
+        "id": 12,
+        "start": 21.5,
+        "end": 22.74,
+        "text": "Because you deserve it?"
+      },
+      {
+        "id": 13,
+        "start": 22.74,
+        "end": 24.9,
+        "text": "I don't think so."
+      },
+      {
+        "id": 14,
+        "start": 24.9,
+        "end": 27.42,
+        "text": "You deserve what you get in life by working hard."
+      }
+    ]
+  },
+  "analysis": {
+    "text_stats": {
+      "character_count": 407,
+      "word_count": 76,
+      "sentence_count": 15
+    },
+    "keywords": [
+      "think",
+      "balance",
+      "deserve",
+      "elon",
+      "musk",
+      "steve",
+      "jobs",
+      "alive",
+      "bill",
+      "gates"
+    ],
+    "extractive_summary": "Do you think Elon Musk has work-life balance? Do you think Steve Jobs, when he was alive, had work-life balance? Do you think Bill Gates? Why do you think you're going to have it? I don't think so.",
+    "topic_summary": {
+      "Tema 1: think, balance": "Why do you think you're going to have it? I don't think so."
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "file_info": {
+    "original_file": "/Users/Alexis/Desktop/githubroot/github/youtube/videos/WhatsApp Video 2025-08-16 at 18.16.04.mp4",
+    "file_type": "video",
+    "processed_date": "2025-08-17T08:44:12.030908",
+    "file_size_mb": 3.16
+  },
+  "transcription": {
+    "language": "en",
+    "duration_seconds": 46.3,
+    "full_text": "My my house in Miami Beach was a hundred thousand dollars in 1930. It was appraised at forty six million dollars a few years ago Do the calculation. It's on a path to be worth a hundred million dollars Which means that the US dollar will have lost 99.9% of its value over 100 years Warren Buffett knows this Charlie Munger knows this basically You're the bottom line there is your money in the bank isn't money Okay, so the answer is you shouldn't have any money in a bank, right? You're you're basically losing 7% of all your wealth every year and a good year if it's the dollar You're losing 15% of your wealth in a not good year",
+    "raw_text": "My my house in Miami Beach was a hundred thousand dollars in 1930. It was appraised at forty six million dollars a few years ago Do the calculation. It's on a path to be worth a hundred million dollars Which means that the US dollar will have lost 99.9% of its value over 100 years Warren Buffett knows this Charlie Munger knows this basically You're the bottom line there is your money in the bank isn't money Okay, so the answer is you shouldn't have any money in a bank, right? You're you're basically losing 7% of all your wealth every year and a good year if it's the dollar You're losing 15% of your wealth in a not good year",
+    "segments": [
+      {
+        "id": 0,
+        "start": 0.0,
+        "end": 9.44,
+        "text": "My my house in Miami Beach was a hundred thousand dollars in 1930. It was appraised at forty six million dollars a few years ago"
+      },
+      {
+        "id": 1,
+        "start": 11.2,
+        "end": 15.88,
+        "text": "Do the calculation. It's on a path to be worth a hundred million dollars"
+      },
+      {
+        "id": 2,
+        "start": 15.88,
+        "end": 22.94,
+        "text": "Which means that the US dollar will have lost 99.9% of its value over 100 years"
+      },
+      {
+        "id": 3,
+        "start": 23.88,
+        "end": 26.96,
+        "text": "Warren Buffett knows this Charlie Munger knows this basically"
+      },
+      {
+        "id": 4,
+        "start": 27.36,
+        "end": 30.66,
+        "text": "You're the bottom line there is your money in the bank isn't money"
+      },
+      {
+        "id": 5,
+        "start": 31.36,
+        "end": 35.1,
+        "text": "Okay, so the answer is you shouldn't have any money in a bank, right?"
+      },
+      {
+        "id": 6,
+        "start": 35.12,
+        "end": 41.84,
+        "text": "You're you're basically losing 7% of all your wealth every year and a good year if it's the dollar"
+      },
+      {
+        "id": 7,
+        "start": 41.84,
+        "end": 46.18,
+        "text": "You're losing 15% of your wealth in a not good year"
+      }
+    ]
+  },
+  "analysis": {
+    "text_stats": {
+      "character_count": 631,
+      "word_count": 121,
+      "sentence_count": 4
+    },
+    "keywords": [
+      "dollars",
+      "money",
+      "year",
+      "hundred",
+      "million",
+      "years",
+      "dollar",
+      "knows",
+      "basically",
+      "bank"
+    ],
+    "extractive_summary": "My my house in Miami Beach was a hundred thousand dollars in 1930. It was appraised at forty six million dollars a few years ago Do the calculation. It's on a path to be worth a hundred million dollars Which means that the US dollar will have lost 99.9% of its value over 100 years Warren Buffett knows this Charlie Munger knows this basically You're the bottom line there is your money in the bank isn't money Okay, so the answer is you shouldn't have any money in a bank, right? You're you're basically losing 7% of all your wealth every year and a good year if it's the dollar You're losing 15% of your wealth in a not good year",
+    "topic_summary": {
+      "Tema 1: dollars, money": "It's on a path to be worth a hundred million dollars Which means that the US dollar will have lost 99.9% of its value over 100 years Warren Buffett knows this Charlie Munger knows this basically You're the bottom line there is your money in the bank isn't money Okay, so the answer is you shouldn't have any money in a bank, right? You're you're basically losing 7% of all your wealth every year and a good year if it's the dollar You're losing 15% of your wealth in a not good year"
+    }
+  }
+}

@@ -1,141 +1,200 @@
-# YouTube Media Downloader
+# Audio Transcriber & Summarizer
 
-A Python-based tool for downloading and converting YouTube videos with support for various media formats. This project uses yt-dlp for downloading and pydub for audio processing.
+Un proyecto Python avanzado para extraer audio de videos, transcribir el contenido usando Whisper de OpenAI y generar resúmenes inteligentes automáticamente.
 
-## 🚨 Legal Notice
+## 🚀 Características Principales
 
-This tool is for educational purposes only. Users are responsible for complying with YouTube's Terms of Service and respecting copyright laws. Only download content that you have permission to use.
+- 🎥 **Extrae audio** de archivos de video (MP4, AVI, MOV, MKV, etc.)
+- 🎵 **Procesa archivos de audio** directamente (MP3, WAV, FLAC, etc.)
+- 🎤 **Transcripción automática** usando Whisper de OpenAI
+- 🌍 **Detección automática de idioma** o especificación manual
+- 📝 **Resúmenes inteligentes** extractivos y por temas
+- 🔍 **Extracción de palabras clave** automática
+- 📊 **Estadísticas detalladas** del contenido
+- 💾 **Múltiples formatos de salida** (JSON, TXT)
+- ⚡ **Soporte para GPU** (CUDA) para procesamiento rápido
 
-## ✨ Features
+## 📦 Instalación
 
-- Download YouTube videos in highest quality
-- Convert video files to audio (MP3)
-- Support for various video formats
-- Custom output filename templates
-- Browser cookie integration
-- Progress tracking
-- Error handling
+### Requisitos previos
 
-## 🛠️ Requirements
+1. **Python 3.8 o superior**
+2. **FFmpeg** (para procesamiento de audio/video)
 
-- Python 3.8+
-- FFmpeg
-- Required Python packages:
-  ```
-  yt-dlp
-  pydub
-  moviepy
-  ```
-
-## 📦 Installation
-
-1. Clone the repository:
+#### Instalar FFmpeg en macOS:
 ```bash
-git clone https://github.com/jalexisg/youtube.git
-cd youtube
+# Usando Homebrew
+brew install ffmpeg
+
+# O usando MacPorts
+sudo port install ffmpeg
 ```
 
-2. Install FFmpeg:
-   - On macOS:
-     ```bash
-     brew install ffmpeg
-     ```
-   - On Ubuntu/Debian:
-     ```bash
-     sudo apt-get install ffmpeg
-     ```
-   - On Windows:
-     - Download from [FFmpeg official website](https://ffmpeg.org/download.html)
-     - Add to system PATH
+### Instalar dependencias
 
-3. Install Python dependencies:
 ```bash
+# Clonar o descargar el proyecto
+cd /Users/Alexis/Desktop/githubroot/github/youtube
+
+# Instalar dependencias de Python
 pip install -r requirements.txt
 ```
 
-## 🚀 Usage
+## 🎯 Uso
 
-### Using the Jupyter Notebook
+### Script Principal: `audio_transcriber_summarizer.py`
 
-1. Launch Jupyter:
+#### Modo Interactivo (Nuevo) 🎯
 ```bash
-jupyter notebook
+# Modo interactivo - selecciona archivo de la carpeta videos
+python audio_transcriber_summarizer.py --interactive
+
+# O simplemente (activa automáticamente el modo interactivo)
+python audio_transcriber_summarizer.py
 ```
 
-2. Open `youtubeDownloader.ipynb`
-3. Follow the interactive cells
+El modo interactivo te permite:
+- 📁 Ver todos los videos disponibles en la carpeta `videos/`
+- 📊 Ver el tamaño de cada archivo
+- 🎯 Seleccionar fácilmente el archivo que quieres procesar
+- ❌ Cancelar la operación si es necesario
 
-### Video Download Function
-
-```python
-from yt_dlp import YoutubeDL
-
-def download_youtube_video(url):
-    ydl_opts = {
-        'format': 'bestvideo+bestaudio/best',
-        'outtmpl': '%(title)s.%(ext)s',
-        'merge_output_format': 'mp4',
-        'cookiesfrombrowser': ('chrome',),
-        'quiet': False,
-    }
-    
-    with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+#### Uso básico con archivo específico
+```bash
+python audio_transcriber_summarizer.py archivo.mp4
 ```
 
-### Audio Conversion
+#### Opciones avanzadas
+```bash
+# Especificar modelo de Whisper
+python audio_transcriber_summarizer.py video.mp4 --model medium
 
-```python
-from pydub import AudioSegment
+# Especificar idioma
+python audio_transcriber_summarizer.py video.mp4 --language es
 
-# Convert MKV to MP3
-audio = AudioSegment.from_file("video.mkv")
-audio.export("audio.mp3", format="mp3", bitrate="192k")
+# Mantener archivo de audio extraído
+python audio_transcriber_summarizer.py video.mp4 --keep-audio
+
+# Personalizar número de oraciones en el resumen
+python audio_transcriber_summarizer.py video.mp4 --summary-sentences 10
+
+# Especificar directorio de salida
+python audio_transcriber_summarizer.py video.mp4 --output-dir ./mis_transcripciones/
 ```
 
-## 🔧 Configuration
+### Script de Ejemplo: `example_usage.py`
 
-- FFmpeg path settings in environment
-- Custom output templates
-- Browser cookie integration
-- Audio quality settings
-- Video format preferences
+```bash
+# Ejecutar ejemplos interactivos
+python example_usage.py
+```
 
-## 📝 Notes
+### Ejemplos con tus archivos
 
-- Ensure proper FFmpeg installation
-- Check Internet connection stability
-- Verify storage space availability
-- Monitor download progress
-- Handle large files appropriately
+```bash
+# Transcribir y resumir un video
+python audio_transcriber_summarizer.py "pitagoras.mp4" --summary-sentences 5 --language es
 
-## 🤝 Contributing
+# Procesar un archivo de audio
+python audio_transcriber_summarizer.py "Por Amor.mp3" --model small --keep-audio
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+# Procesamiento avanzado con modelo grande
+python audio_transcriber_summarizer.py "LA GOTA FRÍA Calixto Acordeón Mágico El Vallenatero.mp4" --model large --language es --output-dir ./resultados/
+```
 
-## 🐛 Troubleshooting
+## Modelos de Whisper
 
-### Common Issues:
+| Modelo | Tamaño | Velocidad | Precisión | Uso recomendado |
+|--------|--------|-----------|-----------|-----------------|
+| tiny   | ~39 MB | Muy rápido | Básica | Pruebas rápidas |
+| base   | ~74 MB | Rápido | Buena | Uso general |
+| small  | ~244 MB | Medio | Muy buena | Balance calidad/velocidad |
+| medium | ~769 MB | Lento | Excelente | Alta calidad |
+| large  | ~1550 MB | Muy lento | Máxima | Máxima precisión |
 
-1. FFmpeg not found:
-   - Verify FFmpeg installation
-   - Check system PATH
-   - Set explicit paths in code
+## 📄 Archivos de salida
 
-2. Download errors:
-   - Check internet connection
-   - Verify video availability
-   - Update yt-dlp
+El nuevo script genera automáticamente varios archivos:
 
-3. Conversion issues:
-   - Verify file permissions
-   - Check disk space
-   - Update FFmpeg
+### 1. **`archivo_analysis.json`**
+Archivo JSON completo con:
+- Información del archivo original
+- Transcripción completa con segmentos temporales
+- Estadísticas del texto (palabras, oraciones, caracteres)
+- Palabras clave extraídas
+- Resumen extractivo
+- Resumen organizado por temas
 
-## 📜 License
+### 2. **`archivo_transcription.txt`**
+Texto plano limpio de la transcripción completa
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### 3. **`archivo_summary.txt`**
+Archivo de resumen que incluye:
+- Resumen extractivo principal
+- Lista de palabras clave
+- Resumen organizado por temas principales
+
+### 4. **`archivo_audio.wav`** (opcional)
+Archivo de audio extraído (si se especifica `--keep-audio`)
+
+## 🔧 Estructura del proyecto
+
+```
+youtube/
+├── audio_transcriber_summarizer.py  # Script principal (NUEVO)
+├── example_usage.py                 # Ejemplos de uso (NUEVO)
+├── video_transcriber.py             # Script original
+├── youtubeDownloader.ipynb          # Notebook para descargas
+├── download.py                      # Script de descarga
+├── image_resizer.py                 # Utilidad para imágenes
+├── requirements.txt                 # Dependencias actualizadas
+├── README.md                        # Esta documentación
+├── src/                            # Código fuente
+│   └── youtube_downloader.py
+├── tests/                          # Pruebas
+│   └── test_youtube_downloader.py
+└── transcripciones/                # Directorio de salida (se crea automáticamente)
+```
+
+## Códigos de idioma soportados
+
+- `es` - Español
+- `en` - Inglés
+- `fr` - Francés
+- `de` - Alemán
+- `it` - Italiano
+- `pt` - Portugués
+- Y muchos más...
+
+## Solución de problemas
+
+### Error: "ffmpeg not found"
+```bash
+# En macOS
+brew install ffmpeg
+
+# Verificar instalación
+ffmpeg -version
+```
+
+### Error de memoria insuficiente
+- Use un modelo más pequeño (`--model tiny` o `--model base`)
+- Cierre otras aplicaciones que consuman memoria
+
+### Audio no se extrae correctamente
+- Verifique que el archivo de video no esté corrupto
+- Pruebe con otro formato de video
+
+## Licencia
+
+MIT License
+
+## Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request

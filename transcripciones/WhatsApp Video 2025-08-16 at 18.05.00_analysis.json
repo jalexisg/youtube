@@ -1,0 +1,87 @@
+{
+  "file_info": {
+    "original_file": "/Users/Alexis/Desktop/githubroot/github/youtube/videos/WhatsApp Video 2025-08-16 at 18.05.00.mp4",
+    "file_type": "video",
+    "processed_date": "2025-08-17T08:22:25.472695",
+    "file_size_mb": 4.58
+  },
+  "transcription": {
+    "language": "en",
+    "duration_seconds": 30.11,
+    "full_text": "Would you recommend investing in oil then? Is that something that you personally invest in? Let me just say it again, you know, I used to be on CNBC. But I say I don't invest in anything they can print. I don't invest in this, stocks, bonds, ETFs. I'm an entrepreneur, I start gold mines, I start oil wells. I invest in cattle, you know, white-goo cattle, you know why? Because every time the cattle print I get cash flow.",
+    "raw_text": "Would you recommend investing in oil then? Is that something that you personally invest in? Let me just say it again, you know, I used to be on CNBC. But I say I don't invest in anything they can print. I don't invest in this, stocks, bonds, ETFs. I'm an entrepreneur, I start gold mines, I start oil wells. I invest in cattle, you know, white-goo cattle, you know why? Because every time the cattle print I get cash flow.",
+    "segments": [
+      {
+        "id": 0,
+        "start": 0.0,
+        "end": 3.5,
+        "text": "Would you recommend investing in oil then?"
+      },
+      {
+        "id": 1,
+        "start": 3.5,
+        "end": 6.5,
+        "text": "Is that something that you personally invest in?"
+      },
+      {
+        "id": 2,
+        "start": 6.5,
+        "end": 10.0,
+        "text": "Let me just say it again, you know, I used to be on CNBC."
+      },
+      {
+        "id": 3,
+        "start": 10.0,
+        "end": 13.5,
+        "text": "But I say I don't invest in anything they can print."
+      },
+      {
+        "id": 4,
+        "start": 13.5,
+        "end": 18.0,
+        "text": "I don't invest in this, stocks, bonds, ETFs."
+      },
+      {
+        "id": 5,
+        "start": 18.0,
+        "end": 22.0,
+        "text": "I'm an entrepreneur, I start gold mines, I start oil wells."
+      },
+      {
+        "id": 6,
+        "start": 22.0,
+        "end": 27.0,
+        "text": "I invest in cattle, you know, white-goo cattle, you know why?"
+      },
+      {
+        "id": 7,
+        "start": 27.0,
+        "end": 30.0,
+        "text": "Because every time the cattle print I get cash flow."
+      }
+    ]
+  },
+  "analysis": {
+    "text_stats": {
+      "character_count": 422,
+      "word_count": 80,
+      "sentence_count": 8
+    },
+    "keywords": [
+      "invest",
+      "know",
+      "cattle",
+      "print",
+      "start",
+      "would",
+      "recommend",
+      "investing",
+      "something",
+      "personally"
+    ],
+    "extractive_summary": "Is that something that you personally invest in? Let me just say it again, you know, I used to be on CNBC. But I say I don't invest in anything they can print. I don't invest in this, stocks, bonds, ETFs. I invest in cattle, you know, white-goo cattle, you know why?",
+    "topic_summary": {
+      "Tema 1: invest, know": "But I say I don't invest in anything they can print. I invest in cattle, you know, white-goo cattle, you know why?"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "file_info": {
+    "original_file": "/Users/Alexis/Desktop/githubroot/github/youtube/videos/01.mp4",
+    "file_type": "video",
+    "processed_date": "2025-09-08T10:25:24.789015",
+    "file_size_mb": 3.65
+  },
+  "transcription": {
+    "language": "en",
+    "duration_seconds": 26.47,
+    "full_text": "grow on Instagram that can shake her eyes and make more money than the guy that laid the road for us to get here. I have nothing against the girl shaking her eyes. I just simply have a heart for the man to build this country and that build anything anywhere because everybody else gets to live this really lush life because of these people that get up every morning before daylight work all day in the sun and go home and don't even get appreciation for it. I don't think the average person understands that and appreciates the guys wearing hard hats in this country.",
+    "raw_text": "grow on Instagram that can shake her eyes and make more money than the guy that laid the road for us to get here. I have nothing against the girl shaking her eyes. I just simply have a heart for the man to build this country and that build anything anywhere because everybody else gets to live this really lush life because of these people that get up every morning before daylight work all day in the sun and go home and don't even get appreciation for it. I don't think the average person understands that and appreciates the guys wearing hard hats in this country.",
+    "segments": [
+      {
+        "id": 0,
+        "start": 0.0,
+        "end": 3.6,
+        "text": "grow on Instagram that can shake her eyes and make more money than the guy that laid the road"
+      },
+      {
+        "id": 1,
+        "start": 3.6,
+        "end": 7.2,
+        "text": "for us to get here. I have nothing against the girl shaking her eyes. I just simply have"
+      },
+      {
+        "id": 2,
+        "start": 7.2,
+        "end": 11.44,
+        "text": "a heart for the man to build this country and that build anything anywhere because everybody else"
+      },
+      {
+        "id": 3,
+        "start": 11.44,
+        "end": 17.28,
+        "text": "gets to live this really lush life because of these people that get up every morning before daylight"
+      },
+      {
+        "id": 4,
+        "start": 17.28,
+        "end": 22.16,
+        "text": "work all day in the sun and go home and don't even get appreciation for it. I don't think the"
+      },
+      {
+        "id": 5,
+        "start": 22.16,
+        "end": 26.24,
+        "text": "average person understands that and appreciates the guys wearing hard hats in this country."
+      }
+    ]
+  },
+  "analysis": {
+    "text_stats": {
+      "character_count": 567,
+      "word_count": 106,
+      "sentence_count": 4
+    },
+    "keywords": [
+      "eyes",
+      "build",
+      "country",
+      "grow",
+      "instagram",
+      "shake",
+      "make",
+      "money",
+      "laid",
+      "road"
+    ],
+    "extractive_summary": "grow on Instagram that can shake her eyes and make more money than the guy that laid the road for us to get here. I have nothing against the girl shaking her eyes. I just simply have a heart for the man to build this country and that build anything anywhere because everybody else gets to live this really lush life because of these people that get up every morning before daylight work all day in the sun and go home and don't even get appreciation for it. I don't think the average person understands that and appreciates the guys wearing hard hats in this country.",
+    "topic_summary": {
+      "Tema 1: eyes, build": "grow on Instagram that can shake her eyes and make more money than the guy that laid the road for us to get here. I have nothing against the girl shaking her eyes."
+    }
+  }
+}
