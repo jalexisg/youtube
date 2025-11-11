@@ -1,6 +1,15 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import os
+import sys
+from types import ModuleType
+
+# Ensure heavy external modules are present in sys.modules as dummies
+# so importing the target module does not fail on CI where packages
+# like yt_dlp or pydub may not be installed.
+sys.modules.setdefault('yt_dlp', ModuleType('yt_dlp'))
+sys.modules.setdefault('pydub', ModuleType('pydub'))
+setattr(sys.modules['pydub'], 'AudioSegment', MagicMock())
+
 from src.youtube_downloader import YouTubeDownloader
 
 class TestYouTubeDownloader(unittest.TestCase):
