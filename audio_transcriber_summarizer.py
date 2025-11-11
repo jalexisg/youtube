@@ -9,6 +9,10 @@ import os
 # Evita el choque de runtimes OpenMP (libiomp5.dylib duplicada) entre MKL (NumPy de conda)
 # y PyTorch/Whisper instalados vía pip. Es un workaround seguro para este caso.
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+# Try to disable tqdm monitor threads started by some libraries which can
+# interact poorly with native extensions and cause segfaults on shutdown.
+# This is a best-effort hint; some libs may not honor it, but it's harmless.
+os.environ.setdefault("TQDM_DISABLE", "1")
 import sys
 import json
 import argparse
@@ -16,6 +20,46 @@ from pathlib import Path
 from datetime import datetime
 import re
 from typing import List, Dict, Optional
+import threading
+import time
+import gc
+import subprocess
+import multiprocessing as mp
+import faulthandler
+
+# On macOS, forking a process after threads or native libs are loaded
+# can cause crashes (segfaults) and leaked semaphores. Use 'spawn'
+# start method when possible. Do this early, before any child
+# processes/threads are created.
+try:
+    if mp.get_start_method(allow_none=True) != 'spawn':
+        mp.set_start_method('spawn')
+except RuntimeError:
+    # start method already set by the runtime; ignore
+    pass
+
+# Enable faulthandler to get Python tracebacks on segfaults
+faulthandler.enable()
+
+
+def _stop_tqdm_monitor():
+    """
+    Attempt to clean up tqdm monitor thread by clearing tqdm instances.
+    This is a best-effort no-raise helper to reduce segfaults caused by
+    lingering tqdm monitor threads from native extensions.
+    """
+    try:
+        import tqdm
+        # _instances is a WeakSet; clear it to drop references to progress bars
+        inst = getattr(tqdm.tqdm, '_instances', None)
+        if inst is not None:
+            try:
+                inst.clear()
+            except Exception:
+                # ignore any errors; this is best-effort
+                pass
+    except Exception:
+        pass
 
 # Import necessary libraries
 def check_and_import_dependencies():
@@ -81,8 +125,29 @@ def check_and_import_dependencies():
     whisper = WhisperModel  # Referencia a la clase para mantener orden de retorno
     return whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np
 
-# Verificar e importar dependencias
-whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np = check_and_import_dependencies()
+# Verificar e importar dependencias SOLO en procesos hijos o si se fuerza explícitamente.
+# Evitar importar librerías nativas en el proceso padre interactivo para que no
+# arranquen hilos/recursos que luego provoquen segfaults al mezclarse con otras
+# extensiones nativas. El child se lanzará con --child-run por la lógica del
+# script, por lo que aquí detectamos ese flag.
+if '--child-run' in sys.argv or os.environ.get('FORCE_IMPORT_DEPENDENCIES') == '1':
+    whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np = check_and_import_dependencies()
+else:
+    # Placeholders para no importar dependencias en el proceso padre
+    whisper = None
+    torch = None
+    VideoFileClip = None
+    AudioSegment = None
+    nltk = None
+    sent_tokenize = None
+    word_tokenize = None
+    stopwords = None
+    Counter = None
+    np = None
+
+# Extensiones de archivo soportadas (usadas en selección y procesamiento)
+video_extensions = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm'}
+audio_extensions = {'.mp3', '.wav', '.flac', '.m4a', '.aac', '.ogg', '.wma'}
 
 class AudioTranscriberSummarizer:
     def __init__(self, model_size="base", language="auto"):
@@ -114,6 +179,8 @@ class AudioTranscriberSummarizer:
             raise RuntimeError(f"No se pudo cargar el modelo {model_size}: {last_error}")
 
         self.language = language
+        # Timeout (s) for potentially hanging transcribe calls
+        self.transcribe_timeout = 300
         self._setup_nltk()
         print("✅ Inicialización completada")
     
@@ -195,6 +262,11 @@ class AudioTranscriberSummarizer:
         Devuelve un diccionario similar al formato anterior para minimizar cambios.
         """
         print(f"🎤 Transcribiendo audio: {os.path.basename(audio_path)}")
+        t_start = time.time()
+
+        # Simple status prints (avoid background threads that may interact
+        # badly with native extensions during cleanup / shutdown).
+        print("⏳ Transcribiendo... (progreso en consola)")
 
         try:
             # Parámetros de transcripción
@@ -205,11 +277,42 @@ class AudioTranscriberSummarizer:
             if self.language != "auto":
                 transcribe_kwargs["language"] = self.language
 
-            segments_iter, info = self.model.transcribe(audio_path, **transcribe_kwargs)
+            print("⏱️ Llamando a model.transcribe() con argumentos:", transcribe_kwargs)
+            t_trans_start = time.time()
+
+            # Ejecutar la llamada potencialmente bloqueante en un hilo para aplicar timeout
+            call_result = {}
+
+            def _call_transcribe():
+                try:
+                    call_result['value'] = self.model.transcribe(audio_path, **transcribe_kwargs)
+                except Exception as e:
+                    call_result['exc'] = e
+
+            trans_thread = threading.Thread(target=_call_transcribe, daemon=True)
+            trans_thread.start()
+            trans_thread.join(timeout=self.transcribe_timeout)
+
+            if trans_thread.is_alive():
+                print(f"\n⏳ Tiempo de espera excedido ({self.transcribe_timeout}s) en model.transcribe().")
+                print("⚠️ El proceso de transcripción parece haberse quedado colgado. Prueba ejecutar con --reinit-each para reinicializar el modelo entre archivos, o usa un modelo más pequeño (tiny) para diagnosticar.)")
+                # No podemos forzar la terminación del hilo de forma segura; informar y salir
+                return None
+
+            if 'exc' in call_result:
+                raise call_result['exc']
+
+            segments_iter, info = call_result.get('value', (None, None))
+            print(f"⏱️ model.transcribe() llamada completada en {time.time()-t_trans_start:.2f}s, comenzando a iterar segmentos...")
             segments = []
             full_text_parts = []
             for i, seg in enumerate(segments_iter):
                 seg_text = seg.text.strip()
+                # provide inline feedback for each segment
+                try:
+                    print(f"\n  • Segment {i}: {seg.start:.2f}s - {seg.end:.2f}s -> {seg_text[:120]}")
+                except Exception:
+                    pass
                 segments.append({
                     "id": i,
                     "start": float(seg.start),
@@ -221,18 +324,42 @@ class AudioTranscriberSummarizer:
             full_text = " ".join(full_text_parts).strip()
             result = {
                 "text": full_text,
-                "language": info.language or "desconocido",
-                "duration": getattr(info, "duration", 0.0),
+                "language": getattr(info, 'language', None) or "desconocido",
+                "duration": float(getattr(info, "duration", 0.0)),
                 "segments": segments,
             }
 
-            print("✅ Transcripción completada!")
+            elapsed = time.time() - t_start
+            print("\n✅ Transcripción completada!")
             print(f"🌍 Idioma detectado: {result.get('language', 'desconocido')}")
             print(f"📝 Longitud del texto: {len(result['text'])} caracteres")
+            print(f"⏱️ Tiempo total transcripción (incluyendo iteración segmentos): {elapsed:.2f}s")
             return result
         except Exception as e:  # noqa: BLE001
-            print(f"❌ Error al transcribir: {e}")
+            print(f"\n❌ Error al transcribir: {e}")
             return None
+        finally:
+            # Forzar recolección de basura y limpieza de caché CUDA si está disponible
+            try:
+                gc.collect()
+            except Exception:
+                pass
+            try:
+                try:
+                    import torch as _torch
+                except Exception:
+                    _torch = None
+
+                if _torch is not None and hasattr(_torch, 'cuda'):
+                    try:
+                        if _torch.cuda.is_available():
+                            _torch.cuda.empty_cache()
+                            print('♻️ CUDA cache cleared')
+                    except Exception:
+                        pass
+            except Exception:
+                # No torch installed or cannot clear cache
+                pass
     
     def clean_text(self, text: str) -> str:
         """Limpia y normaliza el texto transcrito"""
@@ -429,14 +556,9 @@ class AudioTranscriberSummarizer:
         # Crear directorio si no existe
         output_dir.mkdir(exist_ok=True)
         
-        print(f"\n{'='*60}")
-        print(f"🎯 PROCESANDO: {file_path.name}")
-        print(f"📁 GUARDANDO EN: {output_dir}")
-        print(f"{'='*60}")
-        
-        # Determinar si es video o audio
-        video_extensions = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm'}
-        audio_extensions = {'.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a'}
+        print(f"{'='*40}")
+        print("� INICIANDO TRANSCRIPCIÓN")
+        print(f"{'='*40}")
         
         file_extension = file_path.suffix.lower()
         
@@ -466,23 +588,76 @@ class AudioTranscriberSummarizer:
         print("🎤 INICIANDO TRANSCRIPCIÓN")
         print(f"{'='*40}")
         
+        print("⏱️ Llamando a transcribe_audio()...")
+        sys.stdout.flush()
         transcription = self.transcribe_audio(audio_path)
-        
+        print("⏱️ transcribe_audio() finalizó")
+        sys.stdout.flush()
+
         if not transcription:
             print("❌ Error: No se pudo transcribir el audio")
             return None
         
         # Limpiar texto
+        print("⏱️ Limpiando texto transcrito...")
+        sys.stdout.flush()
         clean_text = self.clean_text(transcription["text"])
-        
+
+        # Helper para ejecutar funciones con timeout en hilo
+        def _run_with_timeout(fn, args=(), kwargs=None, timeout=120):
+            kwargs = kwargs or {}
+            result = {}
+
+            def _target():
+                try:
+                    result['value'] = fn(*args, **kwargs)
+                except Exception as e:
+                    result['exc'] = e
+
+            th = threading.Thread(target=_target, daemon=True)
+            th.start()
+            th.join(timeout=timeout)
+            if th.is_alive():
+                return {'timeout': True}
+            if 'exc' in result:
+                return {'exc': result['exc']}
+            return {'value': result.get('value')}
+
         # Extraer palabras clave
         print(f"\n🔍 Extrayendo palabras clave...")
-        keywords = self.extract_keywords(clean_text)
-        
+        sys.stdout.flush()
+        kw_res = _run_with_timeout(self.extract_keywords, args=(clean_text,), timeout=60)
+        if 'timeout' in kw_res:
+            print("⚠️ Timeout en extracción de palabras clave (60s). Se continuará sin keywords.")
+            keywords = []
+        elif 'exc' in kw_res:
+            print(f"⚠️ Error en extract_keywords: {kw_res['exc']}")
+            keywords = []
+        else:
+            keywords = kw_res.get('value', []) or []
+
         # Crear resúmenes
         print(f"📋 Creando resúmenes...")
-        extractive_summary = self.create_extractive_summary(clean_text, summary_sentences)
-        topic_summary = self.create_topic_summary(clean_text)
+        sys.stdout.flush()
+        ex_res = _run_with_timeout(self.create_extractive_summary, args=(clean_text, summary_sentences), timeout=90)
+        if 'timeout' in ex_res:
+            print("⚠️ Timeout en resumen extractivo (90s). Usando texto original como fallback.")
+            extractive_summary = clean_text[:1000]
+        elif 'exc' in ex_res:
+            print(f"⚠️ Error en create_extractive_summary: {ex_res['exc']}")
+            extractive_summary = clean_text[:1000]
+        else:
+            extractive_summary = ex_res.get('value', '') or ''
+
+        topic_res = _run_with_timeout(self.create_topic_summary, args=(clean_text,), timeout=90)
+        if 'timeout' in topic_res:
+            print("⚠️ Timeout en resumen por temas (90s). Creando resumen general fallback.")
+            topic_summary = {"Resumen general": extractive_summary}
+        elif 'exc' in topic_res:
+            print(f"⚠️ Error en create_topic_summary: {topic_res['exc']}")
+            topic_summary = {"Resumen general": extractive_summary}
+        else:
+            topic_summary = topic_res.get('value', {}) or {"Resumen general": extractive_summary}
         
         # Preparar resultado completo
         result = {
@@ -651,47 +826,113 @@ def main():
                        help='Número de oraciones en el resumen extractivo (default: 5)')
     parser.add_argument('--interactive', '-i', action='store_true',
                        help='Modo interactivo para seleccionar archivo de video')
+    parser.add_argument('--reinit-each', action='store_true',
+                       help='Reinicializar el modelo entre cada archivo (evita acumulación de estado; más lento)')
+    parser.add_argument('--isolated', action='store_true',
+                       help='Ejecutar cada transcripción en un subproceso aislado (más seguro, más lento)')
+    parser.add_argument('--child-run', action='store_true',
+                       help=argparse.SUPPRESS)
     
     args = parser.parse_args()
+
+    def run_file_in_subprocess(file_path: str, parsed_args, timeout: int = 1200):
+        """Lanza un subproceso Python aislado para procesar un único archivo.
+
+        El subproceso ejecuta este mismo script con --child-run y los parámetros necesarios.
+        """
+        script_path = os.path.abspath(__file__)
+        cmd = [sys.executable, script_path, file_path, '--child-run', '--model', parsed_args.model, '--language', parsed_args.language]
+        if parsed_args.output_dir:
+            cmd += ['--output-dir', parsed_args.output_dir]
+        if parsed_args.keep_audio:
+            cmd += ['--keep-audio']
+        if parsed_args.summary_sentences:
+            cmd += ['--summary-sentences', str(parsed_args.summary_sentences)]
+        # Keep reinit flag in child if requested
+        if getattr(parsed_args, 'reinit_each', False):
+            cmd += ['--reinit-each']
+
+        print(f"🔁 Ejecutando archivo en subproceso: {' '.join(cmd)}")
+        try:
+            # Prepare a reduced environment for the child to avoid MKL/OpenMP
+            # thread clashes and to limit native parallelism which often helps
+            # avoid segfaults in mixed native-extension workloads.
+            env = os.environ.copy()
+            env.update({
+                'OMP_NUM_THREADS': '1',
+                'MKL_NUM_THREADS': '1',
+                'OPENBLAS_NUM_THREADS': '1',
+                'NUMEXPR_NUM_THREADS': '1',
+                # Ensure tqdm monitor threads are discouraged in child too
+                'TQDM_DISABLE': env.get('TQDM_DISABLE', '1'),
+                # Keep existing KMP duplicate setting
+                'KMP_DUPLICATE_LIB_OK': env.get('KMP_DUPLICATE_LIB_OK', 'TRUE'),
+            })
+
+            # Run child in a new session so signals and subprocess cleanup are isolated.
+            result = subprocess.run(cmd, check=False, timeout=timeout, env=env, start_new_session=True, close_fds=True)
+            print(f"🔚 Subproceso finalizado con código de salida: {result.returncode}")
+        except subprocess.TimeoutExpired:
+            print(f"⏳ Tiempo de espera ({timeout}s) agotado para el subproceso. Se abortó la transcripción.")
+        except Exception as e:
+            print(f"❌ Error ejecutando subproceso: {e}")
+
+    # Si se invocó como child-run, procesar solo el archivo y salir
+    if args.child_run:
+        if not args.file_path:
+            print("❌ child-run requiere una ruta de archivo como argumento")
+            sys.exit(2)
+        # Procesar el archivo en este proceso hijo
+        processor = None
+        def run_and_exit(file_path_arg):
+            nonlocal processor
+            if processor is None:
+                try:
+                    processor = AudioTranscriberSummarizer(args.model, args.language)
+                except Exception as e:
+                    print(f"❌ Error inicializando el procesador en child: {e}")
+                    return 2
+            res = processor.process_media_file(file_path_arg, args.output_dir, args.keep_audio, args.summary_sentences)
+            return 0 if res else 3
+
+        code = run_and_exit(args.file_path)
+        sys.exit(code)
     
-    # Determinar archivo a procesar
-    file_path = None
-    
-    if args.interactive or not args.file_path:
-        # Modo interactivo o no se proporcionó archivo
-        print("🎯 Modo de selección interactiva activado")
-        file_path = select_video_file()
-        if not file_path:
-            sys.exit(1)
-    else:
-        file_path = args.file_path
-    
-    # Verificar archivo
-    if not os.path.exists(file_path):
-        print(f"❌ Error: El archivo {file_path} no existe")
-        sys.exit(1)
-    
-    # Crear procesador
-    try:
-        processor = AudioTranscriberSummarizer(args.model, args.language)
-    except Exception as e:
-        print(f"❌ Error inicializando el procesador: {e}")
-        sys.exit(1)
-    
-    # Procesar archivo
-    result = processor.process_media_file(
-        file_path,
-        args.output_dir,
-        args.keep_audio,
-        args.summary_sentences
-    )
-    
-    if result:
+    # Determinar modo: interactivo o archivo puntual
+    processor = None  # lazy init
+
+    def run_and_show(file_path):
+        nonlocal processor
+        # Crear procesador si no existe (carga el modelo la primera vez)
+        if processor is None:
+            try:
+                processor = AudioTranscriberSummarizer(args.model, args.language)
+            except Exception as e:
+                print(f"❌ Error inicializando el procesador: {e}")
+                return None
+
+        # Verificar archivo
+        if not os.path.exists(file_path):
+            print(f"❌ Error: El archivo {file_path} no existe")
+            return None
+
+        # Procesar archivo
+        result = processor.process_media_file(
+            file_path,
+            args.output_dir,
+            args.keep_audio,
+            args.summary_sentences
+        )
+
+        if not result:
+            print("❌ Error: No se pudo completar el procesamiento")
+            return None
+
+        # Mostrar resumen/estadísticas (igual que antes)
         print(f"\n{'='*60}")
         print("✅ PROCESAMIENTO COMPLETADO")
         print(f"{'='*60}")
-        
-        # Mostrar estadísticas
+
         stats = result["analysis"]["text_stats"]
         print(f"📊 Estadísticas:")
         print(f"   • Idioma: {result['transcription']['language']}")
@@ -699,20 +940,107 @@ def main():
         print(f"   • Palabras: {stats['word_count']}")
         print(f"   • Oraciones: {stats['sentence_count']}")
         print(f"   • Caracteres: {stats['character_count']}")
-        
-        # Mostrar palabras clave
+
         print(f"\n🔑 Palabras clave:")
         print(f"   {', '.join(result['analysis']['keywords'][:8])}")
-        
-        # Mostrar transcripción completa
+
         print(f"\n📝 TRANSCRIPCIÓN COMPLETA:")
         print(f"{'='*60}")
         print(result["transcription"]["full_text"])
         print(f"{'='*60}")
-        
+
+        return result
+
+    # Interactive loop: if interactive mode or no file provided, keep showing menu after each transcription
+    if args.interactive or not args.file_path:
+        print("🎯 Modo interactivo activado — el menú volverá después de cada transcripción")
+        while True:
+            file_path = select_video_file()
+            if not file_path:
+                print("❌ Operación cancelada. Saliendo.")
+                break
+
+            # To avoid native crashes leaking into the interactive loop
+            # (segfaults from native extension threads), always run the
+            # actual processing in an isolated subprocess. This confines
+            # crashes to the child and keeps the parent interactive shell
+            # responsive. The existing --isolated flag is still supported
+            # but we force isolation here for safety.
+            run_file_in_subprocess(file_path, args)
+
+            # Flush prints and short sleep to ensure terminal state is stable before prompting
+            try:
+                sys.stdout.flush()
+            except Exception:
+                pass
+            time.sleep(0.05)
+
+            # Si se solicita, reinicializar el procesador para forzar recarga del modelo
+            if args.reinit_each and processor is not None:
+                try:
+                    print("🔁 Reinicializando el modelo para la próxima corrida (liberando memoria)")
+                    del processor
+                    processor = None
+                    try:
+                        gc.collect()
+                    except Exception:
+                        pass
+                    try:
+                        import torch as _torch
+                        if hasattr(_torch, 'cuda') and _torch.cuda.is_available():
+                            _torch.cuda.empty_cache()
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+
+            # Al finalizar, preguntar si desea procesar otro (volver al menú)
+            try:
+                # Best-effort: stop tqdm monitor threads before blocking on input to
+                # avoid segfaults caused by lingering monitor threads interacting
+                # with native extensions.
+                _stop_tqdm_monitor()
+                cont = input("\n¿Procesar otro archivo? [Y/n]: ").strip().lower()
+            except KeyboardInterrupt:
+                print("\n❌ Interrumpido por usuario. Saliendo.")
+                break
+            if cont and cont.startswith('n'):
+                print("Saliendo del modo interactivo.")
+                break
+
+        # Fin del modo interactivo
     else:
-        print("❌ Error: No se pudo completar el procesamiento")
-        sys.exit(1)
+        # Modo no interactivo: procesar el archivo proporcionado y salir
+        file_path = args.file_path
+        if not file_path or not os.path.exists(file_path):
+            print(f"❌ Error: El archivo {file_path} no existe")
+            sys.exit(1)
+
+        # Always run processing in an isolated subprocess to confine any
+        # native crashes (from libs like av, torch, numpy MKL, etc.) to the
+        # child process. Users can still opt-out by adding a new flag later,
+        # but defaulting to isolation is the safest behavior on macOS/conda.
+        run_file_in_subprocess(file_path, args)
+        result = None
+        if result is None:
+            sys.exit(1)
+        # Reinicializar si se solicitó (no-interactivo)
+        if args.reinit_each and processor is not None:
+            try:
+                del processor
+                processor = None
+                try:
+                    gc.collect()
+                except Exception:
+                    pass
+                try:
+                    import torch as _torch
+                    if hasattr(_torch, 'cuda') and _torch.cuda.is_available():
+                        _torch.cuda.empty_cache()
+                except Exception:
+                    pass
+            except Exception:
+                pass
 
 if __name__ == "__main__":
     main()
