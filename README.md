@@ -2,6 +2,20 @@
 
 Un proyecto Python avanzado para extraer audio de videos, transcribir el contenido usando Whisper de OpenAI y generar resúmenes inteligentes automáticamente.
 
+## CI status
+
+Este repositorio utiliza GitHub Actions para ejecutar CI (tests) en todas las ramas. Puedes ver el estado del workflow para cualquier rama cambiando `<branch>` por el nombre de la rama en la URL del badge.
+
+Badge del workflow principal (rama `main`):
+
+[![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml)
+
+Badge para una rama específica (reemplaza `<branch>`):
+
+`[![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=<branch>)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml)`
+
+El workflow se ejecuta en cada `push` y `pull_request`, lo que incluye las ramas nuevas que se creen.
+
 ## 🚀 Características Principales
 
 - 🎥 **Extrae audio** de archivos de video (MP4, AVI, MOV, MKV, etc.)
