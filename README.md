@@ -10,10 +10,6 @@ Badge del workflow principal (rama `main`):
 
 [![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml)
 
-Badge para una rama específica (reemplaza `<branch>`):
-
-`[![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=<branch>)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml)`
-
 El workflow se ejecuta en cada `push` y `pull_request`, lo que incluye las ramas nuevas que se creen.
 
 ## 🚀 Características Principales
