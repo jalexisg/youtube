@@ -6,9 +6,11 @@ Un proyecto Python avanzado para extraer audio de videos, transcribir el conteni
 
 Este repositorio utiliza GitHub Actions para ejecutar CI (tests) en todas las ramas. Puedes ver el estado del workflow para cualquier rama cambiando `<branch>` por el nombre de la rama en la URL del badge.
 
-Badge del workflow principal (rama `main`):
+Badge del workflow principal (rama `develop`):
 
-[![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml)
+[![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml?query=branch%3Adevelop)
+
+Nota: si prefieres que el badge muestre otra rama, cambia el parámetro `branch=` en la URL del badge (por ejemplo `branch=main`).
 
 El workflow se ejecuta en cada `push` y `pull_request`, lo que incluye las ramas nuevas que se creen.
 
