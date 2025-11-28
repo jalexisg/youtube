@@ -35,6 +35,8 @@ jobs:
           ls -la
           cat requirements.txt
           python -m pip install -r requirements.txt
+          # Explicitly install critical dependencies to ensure they are present
+          python -m pip install fastapi httpx uvicorn
           # Ensure pytest is installed regardless of requirements.txt contents
           python -m pip install --upgrade pytest
 
