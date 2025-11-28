@@ -1,155 +1,121 @@
-# Audio Transcriber & Summarizer
+# Audio Transcriber & Summarizer (Web & CLI)
 
-Un proyecto Python avanzado para extraer audio de videos, transcribir el contenido usando Whisper de OpenAI y generar resúmenes inteligentes automáticamente.
-
-## CI status
-
-Este repositorio utiliza GitHub Actions para ejecutar CI (tests) en todas las ramas. Puedes ver el estado del workflow para cualquier rama cambiando `<branch>` por el nombre de la rama en la URL del badge.
-
-Badge del workflow principal (rama `develop`):
-
-[![CI](https://github.com/jalexisg/youtube/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/jalexisg/youtube/actions/workflows/ci.yml?query=branch%3Adevelop)
-
-Nota: si prefieres que el badge muestre otra rama, cambia el parámetro `branch=` en la URL del badge (por ejemplo `branch=main`).
-
-El workflow se ejecuta en cada `push` y `pull_request`, lo que incluye las ramas nuevas que se creen.
+Un proyecto Python avanzado para extraer audio de videos, transcribir el contenido usando Whisper de OpenAI y generar resúmenes inteligentes automáticamente. Ahora con una **Interfaz Web Moderna**.
 
 ## 🚀 Características Principales
 
-- 🎥 **Extrae audio** de archivos de video (MP4, AVI, MOV, MKV, etc.)
-- 🎵 **Procesa archivos de audio** directamente (MP3, WAV, FLAC, etc.)
-- 🎤 **Transcripción automática** usando Whisper de OpenAI
-- 🌍 **Detección automática de idioma** o especificación manual
-- 📝 **Resúmenes inteligentes** extractivos y por temas
-- 🔍 **Extracción de palabras clave** automática
-- 📊 **Estadísticas detalladas** del contenido
-- 💾 **Múltiples formatos de salida** (JSON, TXT)
-- ⚡ **Soporte para GPU** (CUDA) para procesamiento rápido
+- 🌐 **Interfaz Web Moderna**: Sube archivos o pega links de YouTube cómodamente.
+- 🐳 **Docker Ready**: Despliegue fácil y rápido sin preocuparse por dependencias.
+- 📥 **Descargas**: Descarga el video/audio original y el audio procesado.
+- 🎥 **YouTube & Shorts**: Soporte completo para videos y Shorts de YouTube.
+- 🔐 **Autenticación**: Soporte para videos con restricción de edad (usando `cookies.txt`).
+- 🎤 **Transcripción Potente**: Usa Whisper de OpenAI (versión `faster-whisper`).
+- 📝 **Resúmenes Inteligentes**: Genera resúmenes extractivos y por temas.
+- 🌍 **Multi-idioma**: Detección automática de idioma.
 
-## 📦 Instalación
+## 📦 Instalación y Uso (Recomendado: Docker)
 
-### Requisitos previos
-
-1. **Python 3.8 o superior**
-2. **FFmpeg** (para procesamiento de audio/video)
-
-#### Instalar FFmpeg en macOS:
-```bash
-# Usando Homebrew
-brew install ffmpeg
-
-# O usando MacPorts
-sudo port install ffmpeg
-```
-
-### Instalar dependencias
-
-```bash
-# Clonar o descargar el proyecto
-cd /Users/Alexis/Desktop/githubroot/github/youtube
-
-# Instalar dependencias de Python
-pip install -r requirements.txt
-
-# Requisitos incluidos en requirements.txt:
-# - faster-whisper
-# - moviepy
-# - numpy
-# - ffmpeg-python
-# - pydub
-# - nltk
-# - yt-dlp
-# - instaloader
-# - pillow
-# - torch
-# - openai-whisper
-```
-
-## 🎯 Uso
-
-### Script Principal: `audio_transcriber_summarizer.py`
-
-#### Modo Interactivo (Nuevo) 🎯
-```bash
-# Modo interactivo - selecciona archivo de la carpeta videos
-python audio_transcriber_summarizer.py --interactive
-
-# O simplemente (activa automáticamente el modo interactivo)
-python audio_transcriber_summarizer.py
-```
-
-El modo interactivo te permite:
-- 📁 Ver todos los videos disponibles en la carpeta `videos/`
-- 📊 Ver el tamaño de cada archivo
-- 🎯 Seleccionar fácilmente el archivo que quieres procesar
-- ❌ Cancelar la operación si es necesario
-
-#### Uso básico con archivo específico
-```bash
-python audio_transcriber_summarizer.py archivo.mp4
-```
-
-#### Opciones avanzadas
-```bash
-# Especificar modelo de Whisper
-python audio_transcriber_summarizer.py video.mp4 --model medium
-
-# Especificar idioma
-python audio_transcriber_summarizer.py video.mp4 --language es
-
-# Mantener archivo de audio extraído
-python audio_transcriber_summarizer.py video.mp4 --keep-audio
-
-# Personalizar número de oraciones en el resumen
-python audio_transcriber_summarizer.py video.mp4 --summary-sentences 10
-
-# Especificar directorio de salida
-python audio_transcriber_summarizer.py video.mp4 --output-dir ./mis_transcripciones/
-```
-
-### Script de Ejemplo: `example_usage.py`
-
-```bash
-# Ejecutar ejemplos interactivos
-python example_usage.py
-```
-
-### Ejemplos con tus archivos
-
-```bash
-# Transcribir y resumir un video
-python audio_transcriber_summarizer.py "pitagoras.mp4" --summary-sentences 5 --language es
-
-# Procesar un archivo de audio
-python audio_transcriber_summarizer.py "Por Amor.mp3" --model small --keep-audio
-
-# Procesamiento avanzado con modelo grande
-python audio_transcriber_summarizer.py "LA GOTA FRÍA Calixto Acordeón Mágico El Vallenatero.mp4" --model large --language es --output-dir ./resultados/
-```
-
-## 🐳 Docker
-
-Puedes ejecutar la aplicación web fácilmente usando Docker.
+La forma más sencilla de usar la aplicación es con Docker.
 
 ### Requisitos
 - Docker
 - Docker Compose
+- (Opcional) `cookies.txt` en la raíz del proyecto para videos restringidos de YouTube.
 
-### Ejecución
+### Pasos
 
-1. **Construir y arrancar**:
-   ```bash
-   docker-compose up --build
-   ```
+1.  **Clonar el repositorio**:
+    ```bash
+    git clone <url-del-repo>
+    cd youtube
+    ```
 
-2. **Acceder a la web**:
-   Abre tu navegador en [http://localhost:8000](http://localhost:8000)
+2.  **Iniciar la aplicación**:
+    ```bash
+    docker-compose up --build
+    ```
 
-3. **Detener**:
-   Presiona `Ctrl+C` o ejecuta:
-   ```bash
-   docker-compose down
-   ```
+3.  **Usar la Web**:
+    Abre tu navegador en **[http://localhost:8000](http://localhost:8000)**.
+
+4.  **Detener**:
+    Presiona `Ctrl+C` en la terminal.
+
+---
+
+## 🔧 Instalación Manual (Local)
+
+Si prefieres ejecutarlo sin Docker:
+
+### Requisitos previos
+1.  **Python 3.8+**
+2.  **FFmpeg**:
+    - macOS: `brew install ffmpeg`
+    - Linux: `sudo apt install ffmpeg`
+
+### Pasos
+
+1.  **Instalar dependencias**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  **Iniciar el servidor web**:
+    ```bash
+    python web_server.py
+    ```
+
+3.  **Acceder**:
+    Ve a [http://localhost:8000](http://localhost:8000).
+
+---
+
+## 💻 Uso por Línea de Comandos (CLI)
+
+También puedes usar los scripts directamente desde la terminal.
+
+### Script Principal: `audio_transcriber_summarizer.py`
+
+#### Modo Interactivo
+```bash
+python audio_transcriber_summarizer.py --interactive
+```
+
+#### Uso Básico
+```bash
+# Archivo local
+python audio_transcriber_summarizer.py video.mp4
+
+# Opciones avanzadas
+python audio_transcriber_summarizer.py video.mp4 --model medium --language es --summary-sentences 10
+```
+
+## 📄 Archivos de Salida
+
+El sistema genera los siguientes archivos en la carpeta `transcripciones/` (o descargables desde la web):
+
+1.  **`*_analysis.json`**: Datos completos, transcripción, estadísticas y palabras clave.
+2.  **`*_transcription.txt`**: Texto plano de la transcripción.
+3.  **`*_summary.txt`**: Resumen extractivo y por temas.
+4.  **`*_audio.wav`**: Audio procesado (opcional).
+
+## 🔧 Estructura del Proyecto
+
+```
+youtube/
+├── web_server.py            # Backend FastAPI
+├── audio_transcriber_summarizer.py # Core logic
+├── Dockerfile              # Configuración Docker
+├── docker-compose.yml      # Orquestación Docker
+├── requirements.txt        # Dependencias
+├── cookies.txt             # (Opcional) Cookies de YouTube
+├── web/                    # Frontend (HTML/CSS/JS)
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── videos/                 # Carpeta para videos descargados
+└── transcripciones/        # Resultados generados
+```
 
 ## Modelos de Whisper
 
@@ -161,89 +127,6 @@ Puedes ejecutar la aplicación web fácilmente usando Docker.
 | medium | ~769 MB | Lento | Excelente | Alta calidad |
 | large  | ~1550 MB | Muy lento | Máxima | Máxima precisión |
 
-## 📄 Archivos de salida
-
-El nuevo script genera automáticamente varios archivos:
-
-### 1. **`archivo_analysis.json`**
-Archivo JSON completo con:
-- Información del archivo original
-- Transcripción completa con segmentos temporales
-- Estadísticas del texto (palabras, oraciones, caracteres)
-- Palabras clave extraídas
-- Resumen extractivo
-- Resumen organizado por temas
-
-### 2. **`archivo_transcription.txt`**
-Texto plano limpio de la transcripción completa
-
-### 3. **`archivo_summary.txt`**
-Archivo de resumen que incluye:
-- Resumen extractivo principal
-- Lista de palabras clave
-- Resumen organizado por temas principales
-
-### 4. **`archivo_audio.wav`** (opcional)
-Archivo de audio extraído (si se especifica `--keep-audio`)
-
-## 🔧 Estructura del proyecto
-
-```
-youtube/
-├── audio_transcriber_summarizer.py  # Script principal (NUEVO)
-├── example_usage.py                 # Ejemplos de uso (NUEVO)
-├── video_transcriber.py             # Script original
-├── youtubeDownloader.ipynb          # Notebook para descargas
-├── download.py                      # Script de descarga
-├── image_resizer.py                 # Utilidad para imágenes
-├── requirements.txt                 # Dependencias actualizadas
-├── README.md                        # Esta documentación
-├── src/                            # Código fuente
-│   └── youtube_downloader.py
-├── tests/                          # Pruebas
-│   └── test_youtube_downloader.py
-└── transcripciones/                # Directorio de salida (se crea automáticamente)
-```
-
-## Códigos de idioma soportados
-
-- `es` - Español
-- `en` - Inglés
-- `fr` - Francés
-- `de` - Alemán
-- `it` - Italiano
-- `pt` - Portugués
-- Y muchos más...
-
-## Solución de problemas
-
-### Error: "ffmpeg not found"
-```bash
-# En macOS
-brew install ffmpeg
-
-# Verificar instalación
-ffmpeg -version
-```
-
-### Error de memoria insuficiente
-- Use un modelo más pequeño (`--model tiny` o `--model base`)
-- Cierre otras aplicaciones que consuman memoria
-
-### Audio no se extrae correctamente
-- Verifique que el archivo de video no esté corrupto
-- Pruebe con otro formato de video
-
 ## Licencia
 
 MIT License
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
