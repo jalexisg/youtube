@@ -126,7 +126,9 @@ def process_url_task(task_id: str, url: str):
         cookies_path = BASE_DIR / "cookies.txt"
         if cookies_path.exists():
             ydl_opts['cookies'] = str(cookies_path)
-            print("Using cookies.txt for authentication")
+            print(f"✅ Found cookies.txt at {cookies_path}")
+        else:
+            print(f"⚠️ cookies.txt NOT found at {cookies_path}")
         
         downloaded_path = None
         video_title = "video"
