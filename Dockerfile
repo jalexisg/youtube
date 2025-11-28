@@ -7,11 +7,13 @@ ENV PYTHONUNBUFFERED=1
 ENV FORCE_IMPORT_DEPENDENCIES=1
 
 # Install system dependencies
-# ffmpeg is required for audio processing
-# git is often needed for installing pip packages from source
+# ffmpeg: for audio/video processing
+# git: for installing python packages from git
+# nodejs: for yt-dlp to handle JS challenges
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     git \
+    nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
