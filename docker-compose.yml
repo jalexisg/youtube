@@ -10,6 +10,8 @@ services:
       - ./transcripciones:/app/transcripciones
       # Persist downloaded videos (optional, can be removed if not needed)
       - ./videos:/app/videos
+      # Mount cookies.txt for authentication
+      - ./cookies.txt:/app/cookies.txt
       # Mount source code for development (optional, remove for production)
       # - .:/app
     environment:

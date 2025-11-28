@@ -13,8 +13,17 @@ ENV FORCE_IMPORT_DEPENDENCIES=1
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     git \
-    nodejs \
+    curl \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 18.x
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    ln -sf /usr/bin/node /usr/bin/nodejs
+
+# Verify Node.js installation
+RUN node -v && npm -v
 
 # Set the working directory in the container
 WORKDIR /app

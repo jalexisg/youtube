@@ -2,6 +2,8 @@ import os
 import shutil
 import uuid
 import asyncio
+import subprocess
+import shutil
 from pathlib import Path
 from typing import Dict, Optional
 from pydantic import BaseModel
@@ -62,6 +64,18 @@ def get_transcriber():
             raise RuntimeError("AudioTranscriberSummarizer not available")
     return transcriber
 
+# Debug: Check for Node.js
+try:
+    node_path = shutil.which('node')
+    print(f"🔍 Node.js path: {node_path}")
+    if node_path:
+        version = subprocess.check_output([node_path, '-v'], text=True).strip()
+        print(f"   - Version: {version}")
+    else:
+        print("   ⚠️ Node.js NOT found in PATH")
+except Exception as e:
+    print(f"   ⚠️ Error checking Node.js: {e}")
+
 class URLRequest(BaseModel):
     url: str
 
@@ -119,14 +133,31 @@ def process_url_task(task_id: str, url: str):
             'format': 'bestvideo[ext=mp4][vcodec^=avc]+bestaudio[ext=m4a]/best[ext=mp4]/best',
             'merge_output_format': 'mp4',
             'noplaylist': True,
-            'quiet': True
+            'quiet': False, # Changed to False for debugging
+            'verbose': True,
+            # 'user_agent': 'Mozilla/5.0 ...', # Removed to avoid mismatch with cookies
+            'sleep_interval': 3,
+            'max_sleep_interval': 10,
+            # 'extractor_args': {'youtube': {'player_client': ['ios']}}, # Reverting to default client
+            'cachedir': False, # Disable cache to force fresh checks (including JS runtimes)
+            # Explicitly allow node runtime (overriding the mysterious deno default)
+            'js_runtimes': {'node': {}},
         }
         
         # Add cookies if available
-        cookies_path = BASE_DIR / "cookies.txt"
+        cookies_path = Path("/app/cookies.txt") # Use absolute path in container
         if cookies_path.exists():
             ydl_opts['cookies'] = str(cookies_path)
             print(f"✅ Found cookies.txt at {cookies_path}")
+            # Verify it's not empty and looks like a netscape cookie file
+            try:
+                content = cookies_path.read_text()
+                if "# Netscape HTTP Cookie File" in content:
+                    print("   - Verified header: Netscape HTTP Cookie File")
+                else:
+                    print("   ⚠️ WARNING: cookies.txt does not appear to have the Netscape header.")
+            except Exception as e:
+                print(f"   ⚠️ Error reading cookies.txt: {e}")
         else:
             print(f"⚠️ cookies.txt NOT found at {cookies_path}")
         
