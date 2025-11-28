@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist transcriptions
+      - ./transcripciones:/app/transcripciones
+      # Persist downloaded videos (optional, can be removed if not needed)
+      - ./videos:/app/videos
+      # Mount source code for development (optional, remove for production)
+      # - .:/app
+    environment:
+      - FORCE_IMPORT_DEPENDENCIES=1
+    restart: unless-stopped

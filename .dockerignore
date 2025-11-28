@@ -1,0 +1,14 @@
+.git
+.venv
+__pycache__
+*.pyc
+.DS_Store
+.ipynb_checkpoints
+videos/
+transcripciones/
+audios/
+images/
+images_16_9/
+*.mp4
+*.mp3
+*.wav

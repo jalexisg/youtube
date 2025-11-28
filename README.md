@@ -127,6 +127,30 @@ python audio_transcriber_summarizer.py "Por Amor.mp3" --model small --keep-audio
 python audio_transcriber_summarizer.py "LA GOTA FRÍA Calixto Acordeón Mágico El Vallenatero.mp4" --model large --language es --output-dir ./resultados/
 ```
 
+## 🐳 Docker
+
+Puedes ejecutar la aplicación web fácilmente usando Docker.
+
+### Requisitos
+- Docker
+- Docker Compose
+
+### Ejecución
+
+1. **Construir y arrancar**:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Acceder a la web**:
+   Abre tu navegador en [http://localhost:8000](http://localhost:8000)
+
+3. **Detener**:
+   Presiona `Ctrl+C` o ejecuta:
+   ```bash
+   docker-compose down
+   ```
+
 ## Modelos de Whisper
 
 | Modelo | Tamaño | Velocidad | Precisión | Uso recomendado |
