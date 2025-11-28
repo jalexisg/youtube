@@ -116,7 +116,7 @@ def process_url_task(task_id: str, url: str):
         # Use task_id as filename to avoid special characters issues
         ydl_opts = {
             'outtmpl': str(UPLOAD_DIR / f'{task_id}.%(ext)s'),
-            'format': 'bestvideo+bestaudio/best',
+            'format': 'bestvideo[ext=mp4][vcodec^=avc]+bestaudio[ext=m4a]/best[ext=mp4]/best',
             'merge_output_format': 'mp4',
             'noplaylist': True,
             'quiet': True
