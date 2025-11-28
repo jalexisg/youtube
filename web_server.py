@@ -122,6 +122,12 @@ def process_url_task(task_id: str, url: str):
             'quiet': True
         }
         
+        # Add cookies if available
+        cookies_path = BASE_DIR / "cookies.txt"
+        if cookies_path.exists():
+            ydl_opts['cookies'] = str(cookies_path)
+            print("Using cookies.txt for authentication")
+        
         downloaded_path = None
         video_title = "video"
         
