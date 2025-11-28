@@ -81,6 +81,17 @@ def process_file_task(task_id: str, file_path: Path, original_filename: str):
         )
         
         if result:
+            # Add download URLs
+            # For uploaded files, they are in UPLOAD_DIR
+            filename = file_path.name
+            result["media_url"] = f"/uploads/{filename}"
+            result["title"] = original_filename
+            
+            # Check for audio file
+            audio_path = OUTPUT_DIR / f"{file_path.stem}_audio.wav"
+            if audio_path.exists():
+                result["audio_url"] = f"/results/{audio_path.name}"
+
             tasks[task_id]["status"] = "completed"
             tasks[task_id]["result"] = result
             tasks[task_id]["message"] = "Processing complete"
@@ -102,8 +113,9 @@ def process_url_task(task_id: str, url: str):
     
     try:
         # Download with yt-dlp
+        # Use task_id as filename to avoid special characters issues
         ydl_opts = {
-            'outtmpl': str(UPLOAD_DIR / f'{task_id}_%(title)s.%(ext)s'),
+            'outtmpl': str(UPLOAD_DIR / f'{task_id}.%(ext)s'),
             'format': 'bestvideo+bestaudio/best',
             'merge_output_format': 'mp4',
             'noplaylist': True,
@@ -111,20 +123,20 @@ def process_url_task(task_id: str, url: str):
         }
         
         downloaded_path = None
+        video_title = "video"
+        
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if 'entries' in info:
-                # It's a playlist, take first? or shouldn't happen with noplaylist
                 info = info['entries'][0]
             
+            video_title = info.get('title', 'video')
+            
             filename = ydl.prepare_filename(info)
-            # prepare_filename might not have the correct extension if merge happened?
-            # yt-dlp usually handles this, but let's verify existence
-            if not os.path.exists(filename):
-                # Try to find the file with mp4 extension if merged
-                base = os.path.splitext(filename)[0]
-                if os.path.exists(base + ".mp4"):
-                    filename = base + ".mp4"
+            # Check for merged file
+            base = os.path.splitext(filename)[0]
+            if os.path.exists(base + ".mp4"):
+                filename = base + ".mp4"
             
             downloaded_path = Path(filename)
 
@@ -143,6 +155,15 @@ def process_url_task(task_id: str, url: str):
         )
         
         if result:
+            # Add download URLs
+            filename = downloaded_path.name
+            result["media_url"] = f"/uploads/{filename}"
+            result["title"] = video_title
+            
+            audio_path = OUTPUT_DIR / f"{downloaded_path.stem}_audio.wav"
+            if audio_path.exists():
+                result["audio_url"] = f"/results/{audio_path.name}"
+
             tasks[task_id]["status"] = "completed"
             tasks[task_id]["result"] = result
             tasks[task_id]["message"] = "Processing complete"
@@ -157,7 +178,10 @@ def process_url_task(task_id: str, url: str):
 @app.post("/api/process-file")
 async def upload_file(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     task_id = str(uuid.uuid4())
-    file_path = UPLOAD_DIR / f"{task_id}_{file.filename}"
+    # Use task_id for filename to avoid special chars
+    ext = os.path.splitext(file.filename)[1]
+    safe_filename = f"{task_id}{ext}"
+    file_path = UPLOAD_DIR / safe_filename
     
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -198,6 +222,9 @@ async def get_task_status(task_id: str):
 
 # Mount static files (Frontend)
 # We mount this last so API routes take precedence
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+app.mount("/results", StaticFiles(directory=str(OUTPUT_DIR)), name="results")
+
 if WEB_DIR.exists():
     app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="static")
 else:

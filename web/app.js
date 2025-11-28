@@ -194,6 +194,36 @@ function showResult(result) {
         }
         document.getElementById('res-summary').innerHTML += `<hr>${topicHtml}`;
     }
+
+    // Handle Downloads
+    const downloadSection = document.getElementById('download-section');
+    const dlMediaBtn = document.getElementById('dl-media-btn');
+    const dlAudioBtn = document.getElementById('dl-audio-btn');
+
+    if (result.media_url || result.audio_url) {
+        downloadSection.classList.remove('hidden');
+
+        const title = result.title || 'download';
+        const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+        if (result.media_url) {
+            dlMediaBtn.href = result.media_url;
+            dlMediaBtn.download = `${safeTitle}_original${result.media_url.substring(result.media_url.lastIndexOf('.'))}`;
+            dlMediaBtn.classList.remove('hidden');
+        } else {
+            dlMediaBtn.classList.add('hidden');
+        }
+
+        if (result.audio_url) {
+            dlAudioBtn.href = result.audio_url;
+            dlAudioBtn.download = `${safeTitle}_audio.wav`;
+            dlAudioBtn.classList.remove('hidden');
+        } else {
+            dlAudioBtn.classList.add('hidden');
+        }
+    } else {
+        downloadSection.classList.add('hidden');
+    }
 }
 
 function formatText(text) {
