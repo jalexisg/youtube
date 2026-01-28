@@ -4,7 +4,7 @@ Un proyecto Python avanzado para extraer audio de videos, transcribir el conteni
 
 ## 🚀 Características Principales
 
-- 🌐 **Interfaz Web Moderna**: Sube archivos o pega links de YouTube cómodamente.
+- 🌐 **Interfaz Web Moderna**: Sube archivos o pega links de Instagram y YouTube cómodamente.
 - 🐳 **Docker Ready**: Despliegue fácil y rápido sin preocuparse por dependencias.
 - 📥 **Descargas**: Descarga el video/audio original y el audio procesado.
 - 🎥 **YouTube & Shorts**: Soporte completo para videos y Shorts de YouTube.
