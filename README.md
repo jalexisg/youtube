@@ -74,20 +74,20 @@ Si prefieres ejecutarlo sin Docker:
 
 También puedes usar los scripts directamente desde la terminal.
 
-### Script Principal: `audio_transcriber_summarizer.py`
+### Script Principal: `skills/transcription/tool.py`
 
 #### Modo Interactivo
 ```bash
-python audio_transcriber_summarizer.py --interactive
+python skills/transcription/tool.py --interactive
 ```
 
 #### Uso Básico
 ```bash
 # Archivo local
-python audio_transcriber_summarizer.py video.mp4
+python skills/transcription/tool.py video.mp4
 
 # Opciones avanzadas
-python audio_transcriber_summarizer.py video.mp4 --model medium --language es --summary-sentences 10
+python skills/transcription/tool.py video.mp4 --model medium --language es --summary-sentences 10
 ```
 
 ## 📄 Archivos de Salida
@@ -103,16 +103,24 @@ El sistema genera los siguientes archivos en la carpeta `transcripciones/` (o de
 
 ```
 youtube/
-├── web_server.py            # Backend FastAPI
-├── audio_transcriber_summarizer.py # Core logic
+├── AGENTS.md               # 🆕 Guía para Agentes AI
+├── web_server.py           # Backend FastAPI
+├── skills/                 # 🆕 Habilidades del Agente
+│   ├── transcription/      # Transcripción y resumen
+│   │   ├── tool.py
+│   │   └── SKILL.md
+│   ├── youtube_download/   # Descarga de YouTube
+│   │   ├── tool.py
+│   │   └── SKILL.md
+│   ├── instagram_download/ # Descarga de Instagram
+│   │   ├── tool.py
+│   │   └── SKILL.md
+│   └── utils/              # Utilidades varias
 ├── Dockerfile              # Configuración Docker
 ├── docker-compose.yml      # Orquestación Docker
 ├── requirements.txt        # Dependencias
 ├── cookies.txt             # (Opcional) Cookies de YouTube
 ├── web/                    # Frontend (HTML/CSS/JS)
-│   ├── index.html
-│   ├── style.css
-│   └── app.js
 ├── videos/                 # Carpeta para videos descargados
 └── transcripciones/        # Resultados generados
 ```

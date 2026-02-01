@@ -12,7 +12,9 @@ def download_youtube_video():
     print(f"⬇️ Descargando: {url}")
     output_dir = "videos"
     os.makedirs(output_dir, exist_ok=True)
-    cookies_path = os.path.join(os.path.dirname(__file__), "cookies.txt")
+    # Look for cookies.txt in project root (3 levels up: tool.py -> youtube_download -> skills -> root)
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    cookies_path = os.path.join(project_root, "cookies.txt")
     ydl_opts = {
         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
         'format': 'bestvideo+bestaudio/best',

@@ -16,10 +16,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# Import existing logic
-# Assuming audio_transcriber_summarizer.py is in the same directory
+# Assuming tool.py is in skills/transcription
 try:
-    from audio_transcriber_summarizer import AudioTranscriberSummarizer
+    from skills.transcription.tool import AudioTranscriberSummarizer
 except ImportError:
     # Fallback for when running from a different context or if dependencies fail
     print("Warning: Could not import AudioTranscriberSummarizer. Ensure dependencies are installed.")
