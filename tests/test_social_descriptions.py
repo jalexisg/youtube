@@ -8,7 +8,7 @@ sys.modules['faster_whisper'] = MagicMock()
 sys.modules['moviepy'] = MagicMock()
 sys.modules['pydub'] = MagicMock()
 sys.modules['nltk'] = MagicMock()
-sys.modules['huggingface_hub'] = MagicMock()
+sys.modules['openai'] = MagicMock()
 
 from skills.transcription.tool import AudioTranscriberSummarizer
 
@@ -19,25 +19,26 @@ class TestSocialDescriptions(unittest.TestCase):
             self.ats = AudioTranscriberSummarizer(model_size="base")
             self.ats.hf_token = "fake_token"
 
-    @patch('huggingface_hub.InferenceClient')
-    def test_generate_social_descriptions_parsing(self, mock_client_class):
-        # Mock client response
-        mock_client = mock_client_class.return_value
+    @patch('openai.OpenAI')
+    def test_generate_social_descriptions_parsing(self, mock_openai_class):
+        # Mock client instance
+        mock_client = mock_openai_class.return_value
         
-        # Simulate a typical response from the model
+        # Mock response structure: response.choices[0].message.content
         mock_response = MagicMock()
-        mock_response.choices = [MagicMock()]
-        mock_response.choices[0].delta.content = (
-            "Opción 1 (Enfocada en su filosofía):\n"
+        mock_message = MagicMock()
+        mock_message.content = (
+            "Opción 1 (Filosofía):\n"
             "El éxito no se mide por un gran negocio, sino por diez pequeños pasos bien dados.\n\n"
-            "Opción 2 (Presentada como una lección):\n"
+            "Opción 2 (Lección):\n"
             "Aprendan de Carlos Slim: la ingeniería y las finanzas van de la mano. Los balances son la clave.\n\n"
-            "Opción 3 (Enfocada en el aprendizaje):\n"
+            "Opción 3 (Aprendizaje):\n"
             "Descubre cómo un estudiante de ingeniería llegó a dominar el mundo de las inversiones."
         )
+        mock_response.choices = [MagicMock(message=mock_message)]
         
-        # Mock chat_completion generator
-        mock_client.chat_completion.return_value = [mock_response]
+        # Mock completions.create call
+        mock_client.chat.completions.create.return_value = mock_response
         
         # Call the method
         result = self.ats.generate_social_descriptions("Texto de prueba sobre negocios y Slim.")

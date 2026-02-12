@@ -11,6 +11,7 @@ Un proyecto Python avanzado para extraer audio de videos, transcribir el conteni
 - 🔐 **Autenticación**: Soporte para videos con restricción de edad (usando `cookies.txt`).
 - 🎤 **Transcripción Potente**: Usa Whisper de OpenAI (versión `faster-whisper`).
 - 📝 **Resúmenes Inteligentes**: Genera resúmenes extractivos y por temas.
+- 📱 **Opciones para Reels/Shorts**: Genera automáticamente 3 opciones descriptivas para tus redes sociales (requiere Hugging Face).
 - 🌍 **Multi-idioma**: Detección automática de idioma.
 
 ## 📦 Instalación y Uso (Recomendado: Docker)
@@ -20,6 +21,7 @@ La forma más sencilla de usar la aplicación es con Docker.
 ### Requisitos
 - Docker
 - Docker Compose
+- **HF_TOKEN**: Un token de Hugging Face (gratuito) configurado en un archivo `.env`.
 - (Opcional) `cookies.txt` en la raíz del proyecto para videos restringidos de YouTube.
 
 ### Pasos
@@ -30,16 +32,22 @@ La forma más sencilla de usar la aplicación es con Docker.
     cd youtube
     ```
 
-2.  **Iniciar la aplicación**:
-    ```bash
-    docker-compose up --build
+3.  **Configurar variables de entorno**:
+    Crea un archivo `.env` en la raíz con tu token:
+    ```env
+    HF_TOKEN=tu_token_aqui
     ```
 
-3.  **Usar la Web**:
+4.  **Iniciar la aplicación**:
+    ```bash
+    docker-compose up --build -d
+    ```
+
+5.  **Usar la Web**:
     Abre tu navegador en **[http://localhost:8000](http://localhost:8000)**.
 
-4.  **Detener**:
-    Presiona `Ctrl+C` en la terminal.
+6.  **Detener**:
+    Presiona `Ctrl+C` o usa `docker-compose down`.
 
 ---
 
@@ -97,7 +105,8 @@ El sistema genera los siguientes archivos en la carpeta `transcripciones/` (o de
 1.  **`*_analysis.json`**: Datos completos, transcripción, estadísticas y palabras clave.
 2.  **`*_transcription.txt`**: Texto plano de la transcripción.
 3.  **`*_summary.txt`**: Resumen extractivo y por temas.
-4.  **`*_audio.wav`**: Audio procesado (opcional).
+4.  **`*_social.txt`**: 3 opciones descriptivas para Reels/Shorts.
+5.  **`*_audio.wav`**: Audio procesado (opcional).
 
 ## 🔧 Estructura del Proyecto
 

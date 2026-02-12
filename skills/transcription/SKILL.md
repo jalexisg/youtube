@@ -11,8 +11,9 @@
 
 ## Dependencies
 - `faster-whisper`
-- `openai` (for summarization)
+- `openai` (for summarization AND Hugging Face integration)
 - `ffmpeg` (system dependency)
+- `python-dotenv` (for `.env` support)
 
 ## Usage
 
