@@ -6,6 +6,7 @@
 
 - **Transcribe**: Converts audio to text with timestamps.
 - **Summarize**: Generates bullet-point summaries of the transcription.
+- **Social Media Descriptions**: Generates 3 creative options for Reels/Shorts using Hugging Face.
 - **Diarization**: (Optional) Can identify different speakers.
 
 ## Dependencies

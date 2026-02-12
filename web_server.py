@@ -7,6 +7,10 @@ import shutil
 from pathlib import Path
 from typing import Dict, Optional
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Force dependency import for the transcriber
 os.environ['FORCE_IMPORT_DEPENDENCIES'] = '1'

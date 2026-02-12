@@ -186,6 +186,27 @@ function showResult(result) {
     document.getElementById('res-transcription').innerHTML = formatText(result.transcription.full_text);
     document.getElementById('res-keywords').innerHTML = result.analysis.keywords.map(k => `<span class="keyword-tag">${k}</span>`).join(', ');
 
+    // Social descriptions if available
+    const resSocial = document.getElementById('res-social');
+
+    if (result.analysis.social_descriptions && Object.keys(result.analysis.social_descriptions).length > 0) {
+        let socialHtml = '<div class="social-options">';
+        const desc = result.analysis.social_descriptions;
+
+        if (desc.filosofia) socialHtml += `<div class="social-item"><strong>Opción 1 (Filosofía):</strong><p>${formatText(desc.filosofia)}</p></div>`;
+        if (desc.leccion) socialHtml += `<div class="social-item"><strong>Opción 2 (Lección):</strong><p>${formatText(desc.leccion)}</p></div>`;
+        if (desc.aprendizaje) socialHtml += `<div class="social-item"><strong>Opción 3 (Aprendizaje):</strong><p>${formatText(desc.aprendizaje)}</p></div>`;
+
+        socialHtml += '</div>';
+        resSocial.innerHTML = socialHtml;
+    } else {
+        const hasSocialData = result.analysis && result.analysis.social_descriptions;
+        const msg = hasSocialData
+            ? "No se pudieron formatear las opciones sociales correctamente."
+            : "No hay opciones sociales. Asegúrate de que el token HF_TOKEN esté bien configurado en el archivo .env y vuelve a procesar el video.";
+        resSocial.innerHTML = `<p class="status-message" style="text-align:center; padding: 2rem; color: var(--text-secondary);">${msg}</p>`;
+    }
+
     // Topic summary if available
     if (result.analysis.topic_summary) {
         let topicHtml = '<h3>Resumen por Temas</h3>';
@@ -242,6 +263,10 @@ copyBtn.addEventListener('click', () => {
     if (activeTab === 'summary') text = currentResult.analysis.extractive_summary;
     else if (activeTab === 'transcription') text = currentResult.transcription.full_text;
     else if (activeTab === 'keywords') text = currentResult.analysis.keywords.join(', ');
+    else if (activeTab === 'social') {
+        const desc = currentResult.analysis.social_descriptions;
+        text = `Opción 1 (Filosofía):\n${desc.filosofia || ''}\n\nOpción 2 (Lección):\n${desc.leccion || ''}\n\nOpción 3 (Aprendizaje):\n${desc.aprendizaje || ''}`;
+    }
 
     navigator.clipboard.writeText(text);
     // Could add a toast notification here

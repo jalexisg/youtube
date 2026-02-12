@@ -26,6 +26,11 @@ import gc
 import subprocess
 import multiprocessing as mp
 import faulthandler
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # On macOS, forking a process after threads or native libs are loaded
 # can cause crashes (segfaults) and leaked semaphores. Use 'spawn'
@@ -114,7 +119,15 @@ def check_and_import_dependencies():
         Counter = None  # type: ignore
         np = None  # type: ignore
         missing_deps.append("numpy")
-
+ 
+    # Hugging Face via OpenAI SDK
+    try:
+        from openai import OpenAI
+        print("✅ openai SDK importado correctamente para Hugging Face")
+    except ImportError:
+        OpenAI = None
+        missing_deps.append("openai")
+ 
     if missing_deps:
         print(f"\n❌ Faltan dependencias: {', '.join(missing_deps)}")
         print("🔧 Instala con: pip install -r requirements.txt")
@@ -123,7 +136,7 @@ def check_and_import_dependencies():
     # Devolvemos placeholders compatibles con el código previo
     torch = None  # Ya no es necesario
     whisper = WhisperModel  # Referencia a la clase para mantener orden de retorno
-    return whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np
+    return whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np, OpenAI
 
 # Verificar e importar dependencias SOLO en procesos hijos o si se fuerza explícitamente.
 # Evitar importar librerías nativas en el proceso padre interactivo para que no
@@ -131,7 +144,7 @@ def check_and_import_dependencies():
 # extensiones nativas. El child se lanzará con --child-run por la lógica del
 # script, por lo que aquí detectamos ese flag.
 if '--child-run' in sys.argv or os.environ.get('FORCE_IMPORT_DEPENDENCIES') == '1':
-    whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np = check_and_import_dependencies()
+    whisper, torch, VideoFileClip, AudioSegment, nltk, sent_tokenize, word_tokenize, stopwords, Counter, np, OpenAI = check_and_import_dependencies()
 else:
     # Placeholders para no importar dependencias en el proceso padre
     whisper = None
@@ -141,9 +154,9 @@ else:
     nltk = None
     sent_tokenize = None
     word_tokenize = None
-    stopwords = None
     Counter = None
     np = None
+    OpenAI = None
 
 # Extensiones de archivo soportadas (usadas en selección y procesamiento)
 video_extensions = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm'}
@@ -182,6 +195,12 @@ class AudioTranscriberSummarizer:
         # Timeout (s) for potentially hanging transcribe calls
         self.transcribe_timeout = 300
         self._setup_nltk()
+        
+        # Initialize Hugging Face client
+        self.hf_token = os.environ.get("HF_TOKEN")
+        print(f"🔑 Hugging Face Token: {'Configurado' if self.hf_token else 'No configurado'}")
+        self.hf_model = "mistralai/Mistral-7B-Instruct-v0.2"
+        print(f"🤖 Usando modelo HF: {self.hf_model}")
         print("✅ Inicialización completada")
     
     def _setup_nltk(self):
@@ -526,6 +545,89 @@ class AudioTranscriberSummarizer:
             print(f"⚠️  Error creando resumen por temas: {e}")
             return {"Resumen general": self.create_extractive_summary(text)}
     
+    def generate_social_descriptions(self, text: str) -> Dict[str, str]:
+        """
+        Genera 3 opciones de descripción para Reels/Shorts usando Hugging Face.
+        """
+        if not self.hf_token:
+            print("⚠️ Advertencia: HF_TOKEN no configurado. Saltando descripciones sociales.")
+            return {}
+            
+        try:
+            from openai import OpenAI
+            client = OpenAI(
+                base_url="https://router.huggingface.co/v1",
+                api_key=self.hf_token
+            )
+            
+            prompt = f"""
+            Basado en la siguiente transcripción de un video, genera exactamente 3 opciones de texto muy breve (máximo 2 líneas por opción) para usar como presentación de un Reel o Short.
+            
+            REGLAS CRÍTICAS:
+            1. NO uses emojis de ningún tipo.
+            2. NO uses asteriscos (*) ni formatos de negrita/cursiva. Solo texto plano.
+            3. Sé extremadamente conciso. Máximo 2 líneas por opción.
+            4. El tono debe ser DESCRIPTIVO e INTRODUCTORIO, no puramente afirmativo. Usa frases como: "Vamos a ver lo que se comenta sobre...", "En este video se exploran las ideas de...", "Descubre la perspectiva de...".
+            5. El texto debe estar listo para copiar y pegar directamente.
+            
+            Transcripción: "{text[:2000]}"
+            
+            Sigue este formato exacto en español:
+            
+            Opción 1 (Filosofía):
+            [Texto breve aquí]
+            
+            Opción 2 (Lección):
+            [Texto breve aquí]
+            
+            Opción 3 (Aprendizaje):
+            [Texto breve aquí]
+            """
+            
+            response_obj = client.chat.completions.create(
+                model=self.hf_model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=600
+            )
+            response = response_obj.choices[0].message.content or ""
+            
+            # Debug: Mostrar respuesta cruda si llega vacía o extraña
+            if not response:
+                print("⚠️ La respuesta de Hugging Face llegó vacía.")
+            else:
+                print(f"📝 Respuesta cruda (primeros 100 caracteres): {response[:100]}...")
+            
+            # Parsear las opciones de forma más robusta
+            options = {}
+            # Regex que busca "Opción X" con o sin acento, seguido de cualquier texto y dos puntos
+            # Ejemplo: "Opción 1 (Filosofía):" o "Opcion 1:"
+            parts = re.split(r'Opci[óo]n \d.*?\:', response, flags=re.IGNORECASE)
+            
+            if len(parts) >= 4:
+                options["filosofia"] = parts[1].strip()
+                options["leccion"] = parts[2].strip()
+                options["aprendizaje"] = parts[3].strip()
+            else:
+                # Fallback parser más agresivo si el split falla
+                opt1 = re.search(r'Opci[óo]n 1.*?\:(.*?)(?=Opci[óo]n 2|$)', response, re.S | re.I)
+                opt2 = re.search(r'Opci[óo]n 2.*?\:(.*?)(?=Opci[óo]n 3|$)', response, re.S | re.I)
+                opt3 = re.search(r'Opci[óo]n 3.*?\:(.*?)$', response, re.S | re.I)
+                
+                if opt1: options["filosofia"] = opt1.group(1).strip()
+                if opt2: options["leccion"] = opt2.group(1).strip()
+                if opt3: options["aprendizaje"] = opt3.group(1).strip()
+            
+            if options:
+                print(f"✅ Descripciones sociales generadas: {list(options.keys())}")
+            else:
+                print(f"⚠️ No se pudieron parsear las opciones sociales de la respuesta: {response[:200]}")
+            
+            return options
+            
+        except Exception as e:
+            print(f"⚠️ Error generando descripciones sociales: {e}")
+            return {}
+    
     def process_media_file(self, file_path: str, output_dir: Optional[str] = None, 
                           keep_audio: bool = False, summary_sentences: int = 5) -> Dict:
         """
@@ -659,6 +761,12 @@ class AudioTranscriberSummarizer:
         else:
             topic_summary = topic_res.get('value', {}) or {"Resumen general": extractive_summary}
         
+        # Generar descripciones sociales (Novedad)
+        print(f"📱 Generando opciones para Reels/Shorts...")
+        sys.stdout.flush()
+        social_res = _run_with_timeout(self.generate_social_descriptions, args=(clean_text,), timeout=120)
+        social_descriptions = social_res.get('value', {}) or {}
+        
         # Preparar resultado completo
         result = {
             "file_info": {
@@ -682,7 +790,8 @@ class AudioTranscriberSummarizer:
                 },
                 "keywords": keywords,
                 "extractive_summary": extractive_summary,
-                "topic_summary": topic_summary
+                "topic_summary": topic_summary,
+                "social_descriptions": social_descriptions
             }
         }
         
@@ -716,6 +825,7 @@ class AudioTranscriberSummarizer:
             
             f.write("RESUMEN POR TEMAS\n")
             f.write("="*50 + "\n")
+        
             for topic, summary in topic_summary.items():
                 f.write(f"\n{topic}:\n")
                 f.write("-" * len(topic) + "\n")
@@ -723,6 +833,17 @@ class AudioTranscriberSummarizer:
                 f.write("\n")
         
         print(f"📋 Resumen: {summary_file.name}")
+        
+        # Archivo de opciones sociales (Novedad)
+        if social_descriptions:
+            social_file = output_dir / f"{file_path.stem}_social.txt"
+            with open(social_file, 'w', encoding='utf-8') as f:
+                f.write("OPCIONES PARA REELS / SHORTS\n")
+                f.write("="*50 + "\n\n")
+                f.write(f"Opción 1 (Filosofía):\n{social_descriptions.get('filosofia', '')}\n\n")
+                f.write(f"Opción 2 (Lección):\n{social_descriptions.get('leccion', '')}\n\n")
+                f.write(f"Opción 3 (Aprendizaje):\n{social_descriptions.get('aprendizaje', '')}\n")
+            print(f"📱 Opciones sociales: {social_file.name}")
         
         # Limpiar archivo temporal de audio
         if temp_audio_path and not keep_audio and os.path.exists(temp_audio_path):
