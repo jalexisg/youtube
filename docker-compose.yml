@@ -16,4 +16,6 @@ services:
       # - .:/app
     environment:
       - FORCE_IMPORT_DEPENDENCIES=1
+    env_file:
+      - .env
     restart: unless-stopped

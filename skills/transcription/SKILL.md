@@ -6,12 +6,14 @@
 
 - **Transcribe**: Converts audio to text with timestamps.
 - **Summarize**: Generates bullet-point summaries of the transcription.
+- **Social Media Descriptions**: Generates 3 creative options for Reels/Shorts using Hugging Face.
 - **Diarization**: (Optional) Can identify different speakers.
 
 ## Dependencies
 - `faster-whisper`
-- `openai` (for summarization)
+- `openai` (for summarization AND Hugging Face integration)
 - `ffmpeg` (system dependency)
+- `python-dotenv` (for `.env` support)
 
 ## Usage
 
