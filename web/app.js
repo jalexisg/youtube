@@ -255,6 +255,18 @@ function capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function showToast(message) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
 // Copy & Download
 copyBtn.addEventListener('click', () => {
     if (!currentResult) return;
@@ -265,12 +277,16 @@ copyBtn.addEventListener('click', () => {
     else if (activeTab === 'keywords') text = currentResult.analysis.keywords.join(', ');
     else if (activeTab === 'social') {
         const desc = currentResult.analysis.social_descriptions;
-        text = `Opción 1 (Filosofía):\n${desc.filosofia || ''}\n\nOpción 2 (Lección):\n${desc.leccion || ''}\n\nOpción 3 (Aprendizaje):\n${desc.aprendizaje || ''}`;
+        text = `Opción 1:\n${desc.filosofia || ''}\n\nOpción 2:\n${desc.leccion || ''}\n\nOpción 3:\n${desc.aprendizaje || ''}`;
     }
 
-    navigator.clipboard.writeText(text);
-    // Could add a toast notification here
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Texto copiado al portapapeles');
+    }).catch(() => {
+        showToast('Error al copiar el texto');
+    });
 });
+
 
 downloadBtn.addEventListener('click', () => {
     if (!currentResult) return;
