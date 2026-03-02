@@ -66,6 +66,9 @@ def get_transcriber():
             raise RuntimeError("AudioTranscriberSummarizer not available")
     return transcriber
 
+class URLRequest(BaseModel):
+    url: str
+
 def process_file_task(task_id: str, file_path: Path, original_filename: str):
     tasks[task_id]["status"] = "processing"
     tasks[task_id]["message"] = "Starting transcription..."

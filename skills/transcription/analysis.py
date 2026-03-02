@@ -151,7 +151,7 @@ def generate_social_descriptions(text: str, model: str = "mistralai/Mistral-7B-I
         options = {}
         # Simple parsing
         for key, pattern in [("filosofia", "1"), ("leccion", "2"), ("aprendizaje", "3")]:
-            match = re.search(f'Opci[óo]n {pattern}.*?\:(.*?)(?=Opci[óo]n|$)', response, re.S | re.I)
+            match = re.search(fr'Opci[óo]n {pattern}.*?\:(.*?)(?=Opci[óo]n|$)', response, re.S | re.I)
             if match:
                 options[key] = match.group(1).strip()
         
