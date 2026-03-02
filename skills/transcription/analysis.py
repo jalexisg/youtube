@@ -113,9 +113,11 @@ def create_topic_summary(text: str) -> Dict[str, str]:
         print(f"⚠️  Error creando resumen por temas: {e}")
         return {"Resumen general": create_extractive_summary(text)}
 
-def generate_social_descriptions(text: str, model: str = "mistralai/Mistral-7B-Instruct-v0.2") -> Dict[str, str]:
+def generate_social_descriptions(text: str, model: str = "mistralai/Mistral-7B-Instruct-v0.2", hf_token: Optional[str] = None) -> Dict[str, str]:
     """Genera 3 opciones de descripción para Reels/Shorts usando Hugging Face."""
-    hf_token = os.environ.get("HF_TOKEN")
+    if not hf_token:
+        hf_token = os.environ.get("HF_TOKEN")
+    
     if not hf_token:
         return {}
             

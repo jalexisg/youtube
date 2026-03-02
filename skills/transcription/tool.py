@@ -75,6 +75,7 @@ class AudioTranscriberSummarizer:
 
         self.language = language
         self.transcribe_timeout = 300
+        self.hf_token = os.environ.get("HF_TOKEN")
         analysis.setup_nltk()
         print("✅ Inicialización completada")
     
@@ -127,6 +128,10 @@ class AudioTranscriberSummarizer:
             return None
         finally:
             gc.collect()
+
+    def generate_social_descriptions(self, text: str) -> Dict[str, str]:
+        """Wrapper for social media description generation to maintain compatibility."""
+        return analysis.generate_social_descriptions(text, hf_token=self.hf_token)
 
     def process_media_file(self, file_path: str, output_dir: Optional[str] = None, 
                            keep_audio: bool = False, summary_sentences: int = 5) -> Optional[Dict]:
