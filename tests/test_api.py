@@ -65,3 +65,35 @@ def test_process_url(mock_ydl):
         assert response.status_code == 200
         data = response.json()
         assert "task_id" in data
+
+
+@patch("web_server.get_transcriber")
+@patch("web_server.YoutubeDL")
+def test_process_url_uses_cookiefile_option(mock_ydl, mock_get_transcriber, tmp_path):
+    cookie_path = tmp_path / "cookies.txt"
+    cookie_path.write_text(
+        "# Netscape HTTP Cookie File\n"
+        ".youtube.com\tTRUE\t/\tTRUE\t1816983372\tSID\tredacted\n"
+    )
+
+    downloaded_path = tmp_path / "downloaded.mp4"
+    downloaded_path.write_bytes(b"video")
+
+    mock_ydl_instance = MagicMock()
+    mock_ydl.return_value.__enter__.return_value = mock_ydl_instance
+    mock_ydl_instance.extract_info.return_value = {"title": "test video", "ext": "mp4"}
+    mock_ydl_instance.prepare_filename.return_value = str(downloaded_path)
+
+    mock_transcriber = MagicMock()
+    mock_transcriber.process_media_file.return_value = {
+        "transcription": {"full_text": "test text"},
+        "analysis": {"extractive_summary": "summary", "keywords": ["test"]},
+    }
+    mock_get_transcriber.return_value = mock_transcriber
+
+    with patch("web_server.BASE_DIR", tmp_path):
+        response = client.post("/api/process-url", json={"url": "http://youtube.com/watch?v=123"})
+
+    assert response.status_code == 200
+    assert mock_ydl.call_args.args[0]["cookiefile"] == str(cookie_path)
+    assert "cookies" not in mock_ydl.call_args.args[0]

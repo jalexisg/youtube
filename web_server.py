@@ -132,7 +132,7 @@ def process_url_task(task_id: str, url: str):
         
         for cp in cookies_locations:
             if cp.exists():
-                ydl_opts['cookies'] = str(cp)
+                ydl_opts['cookiefile'] = str(cp)
                 logger.info(f"✅ Found cookies.txt at {cp}")
                 break
         else:
@@ -243,4 +243,3 @@ if __name__ == "__main__":
     import uvicorn
     logger.info("Starting web server on http://0.0.0.0:8000")
     uvicorn.run(app, host="0.0.0.0", port=8000)
-

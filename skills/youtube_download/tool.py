@@ -23,7 +23,7 @@ def download_youtube_video():
         'noplaylist': True,
     }
     if os.path.isfile(cookies_path):
-        ydl_opts['cookies'] = cookies_path
+        ydl_opts['cookiefile'] = cookies_path
         print("🔑 Usando cookies.txt para autenticación.")
     else:
         print("⚠️ No se encontró cookies.txt. Si tienes problemas, exporta tus cookies de YouTube.")
